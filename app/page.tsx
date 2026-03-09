@@ -1,28 +1,35 @@
 import { apiServer } from "@/api/server";
 import { meErrorMsg, productsErrorMsg } from "@/api/errorMsg";
-import { fetchAll } from "@/util/fetchAll";
 import HomeClient from "@/app/page.client";
+import { StoresProvider } from "@/components/StoresProvider";
+import { prefetchStores } from "@/components/StoresProvider/prefetchStores";
+import { productsStore } from "@/stores/products";
+import { yearStore } from "@/stores/year";
+import { meStore } from "@/stores/me";
 
 export default async function Home() {
-  const [
-    { data: me, error: meError },
-    { data: initProducts, error: initProductsError },
-  ] = await fetchAll(apiServer.me(), apiServer.products());
+  const initData = await prefetchStores(
+    {
+      store: meStore,
+      data: apiServer.me(),
+      error: meErrorMsg,
+    },
+    {
+      store: productsStore,
+      data: apiServer
+        .products()
+        .then((d) => ({ products: d.products, total: d.total })),
+      error: productsErrorMsg,
+    },
+    {
+      store: yearStore,
+      data: new Date().getFullYear(),
+    }
+  );
 
   return (
-    <HomeClient
-      me={me}
-      meError={meErrorMsg(meError)}
-      initProducts={
-        initProducts
-          ? {
-              products: initProducts.products,
-              total: initProducts.total,
-            }
-          : null
-      }
-      initProductsError={productsErrorMsg(initProductsError)}
-      year={new Date().getFullYear()}
-    />
+    <StoresProvider initData={initData}>
+      <HomeClient />
+    </StoresProvider>
   );
 }

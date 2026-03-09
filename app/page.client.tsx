@@ -2,34 +2,18 @@
 
 import { Page } from "@/components/Page";
 import { Products } from "@/features/products/Products";
-import { TMe } from "@/api/types";
-import { InitData, useProducts } from "@/stores/products";
+import { useStore } from "@/components/StoresProvider/useStore";
+import { productsStore } from "@/stores/products";
 
-interface Props {
-  me: TMe;
-  meError: string | null;
-  initProducts: InitData;
-  initProductsError: string | null;
-  year: number;
-}
-export default function HomeClient({
-  me,
-  initProducts,
-  meError,
-  initProductsError,
-  year,
-}: Props) {
-  const hasFooter = useProducts((p) =>
+interface Props {}
+export default function HomeClient({}: Props) {
+  const hasFooter = useStore(productsStore)((p) =>
     Boolean(p.products.length === p.total || p.error || p.refetching)
   );
   return (
-    <Page me={me} meError={meError} year={year} hasFooter={hasFooter}>
+    <Page hasFooter={hasFooter}>
       <h1>Latest Products</h1>
-      <Products
-        initProducts={initProducts}
-        initProductsError={initProductsError}
-        me={me}
-      />
+      <Products />
     </Page>
   );
 }

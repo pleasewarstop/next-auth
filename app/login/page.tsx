@@ -2,21 +2,30 @@ import { apiServer } from "@/api/server";
 import { meErrorMsg } from "@/api/errorMsg";
 import { LoginForm } from "@/features/auth/LoginForm";
 import { Page } from "@/components/Page";
-import { fetchAll } from "@/util/fetchAll";
+import { StoresProvider } from "@/components/StoresProvider";
+import { prefetchStores } from "@/components/StoresProvider/prefetchStores";
+import { meStore } from "@/stores/me";
+import { yearStore } from "@/stores/year";
 import s from "./styles.module.scss";
 
 export default async function Home() {
-  const [{ data: me, error: meError }] = await fetchAll(apiServer.me());
-
+  const initData = await prefetchStores(
+    {
+      store: meStore,
+      data: apiServer.me(),
+      error: meErrorMsg,
+    },
+    {
+      store: yearStore,
+      data: new Date().getFullYear(),
+    }
+  );
   return (
-    <Page
-      me={me}
-      meError={meErrorMsg(meError)}
-      contentClassName={s.content}
-      year={new Date().getFullYear()}
-    >
-      <h1 className={s.title}>Login</h1>
-      <LoginForm />
-    </Page>
+    <StoresProvider initData={initData}>
+      <Page contentClassName={s.content}>
+        <h1 className={s.title}>Login</h1>
+        <LoginForm />
+      </Page>
+    </StoresProvider>
   );
 }

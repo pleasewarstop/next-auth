@@ -3,20 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { TMe } from "@/api/types";
 import { routes } from "@/app/routes";
+import { meStore } from "@/stores/me";
 import { logout } from "@/features/auth/actions";
 import { PageRow } from "@/components/Page/Row";
 import { LoadingError } from "@/components/LoadingError";
+import { useStore } from "@/components/StoresProvider/useStore";
 import s from "./styles.module.scss";
 
-interface Props {
-  me: TMe;
-  meError: string | null;
-}
-export function Header({ me, meError }: Props) {
+interface Props {}
+export function Header({}: Props) {
+  const { me, error } = useStore(meStore)();
+
   const router = useRouter();
   const pathname = usePathname();
+
   return (
     <header className={s.container}>
       <PageRow className={s.content}>
@@ -33,7 +34,7 @@ export function Header({ me, meError }: Props) {
           Abelohost Shop
         </Link>
         <div className={s.right}>
-          <LoadingError className={s.error} error={meError} />
+          <LoadingError className={s.error} error={error} />
           {me ? (
             <>
               <span>

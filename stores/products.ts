@@ -3,13 +3,13 @@ import { CanceledError } from "axios";
 import { api } from "@/api/client";
 import { productsErrorMsg } from "@/api/errorMsg";
 import { TProductsResponse } from "@/api/types";
+import { StoreArg } from "@/components/StoresProvider/types";
 
 const PER_PAGE = 12;
 
-export type InitData = Pick<TProductsResponse, "products" | "total"> | null;
+type InitProducts = Pick<TProductsResponse, "products" | "total">;
 
-interface Values extends Exclude<InitData, null> {
-  inited: boolean;
+interface Values extends InitProducts {
   loading: boolean;
   error: string | null;
   refetching: boolean;
@@ -17,63 +17,45 @@ interface Values extends Exclude<InitData, null> {
 const initValues: Values = {
   products: [],
   total: 0,
-  inited: false,
   loading: false,
   error: null,
   refetching: false,
 };
 
 interface Actions {
-  init: (data: InitData | null, error: string | null) => void;
   fetchNextIfNeeded: () => Promise<void>;
-  abortIfNeeded: () => void;
 }
 
-let abortController: AbortController | null = null;
+export const productsStore = ({ data, error }: StoreArg<InitProducts>) =>
+  create<Values & Actions>((set, get) => ({
+    ...initValues,
+    ...data,
+    error,
 
-export const useProducts = create<Values & Actions>((set, get) => ({
-  ...initValues,
+    fetchNextIfNeeded: async () => {
+      const skip = get().products.length;
+      if (get().loading || (skip !== 0 && skip >= get().total)) return;
 
-  init(data, error) {
-    set({
-      ...initValues,
-      inited: true,
-      error,
-      ...data,
-    });
-  },
+      set({ loading: true, error: null, refetching: Boolean(get().error) });
 
-  fetchNextIfNeeded: async () => {
-    const skip = get().products.length;
-    if (get().loading || (skip !== 0 && skip >= get().total)) return;
+      try {
+        const { products, total } = await api.products({
+          skip,
+          limit: PER_PAGE,
+        });
 
-    set({ loading: true, error: null, refetching: Boolean(get().error) });
-
-    try {
-      abortController = new AbortController();
-
-      const { products, total } = await api.products({
-        skip,
-        limit: PER_PAGE,
-        signal: abortController.signal,
-      });
-
-      set({
-        products: [...get().products, ...products],
-        total,
-        loading: false,
-        refetching: false,
-      });
-    } catch (e: any) {
-      set({
-        loading: false,
-        refetching: false,
-        error: e instanceof CanceledError ? null : productsErrorMsg(e),
-      });
-    }
-  },
-
-  abortIfNeeded: () => {
-    if (get().loading) abortController?.abort();
-  },
-}));
+        set({
+          products: [...get().products, ...products],
+          total,
+          loading: false,
+          refetching: false,
+        });
+      } catch (e: any) {
+        set({
+          loading: false,
+          refetching: false,
+          error: e instanceof CanceledError ? null : productsErrorMsg(e),
+        });
+      }
+    },
+  }));

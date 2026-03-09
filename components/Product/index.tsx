@@ -1,13 +1,16 @@
 import Image from "next/image";
-import { TMe, TProduct } from "@/api/types";
+import { TProduct } from "@/api/types";
 import { Button } from "@/components/Button";
 import s from "./styles.module.scss";
+import { useStore } from "@/components/StoresProvider/useStore";
+import { meStore } from "@/stores/me";
 
 export interface Props {
   product: TProduct;
-  me: TMe;
 }
-export function Product({ product, me }: Props) {
+export function Product({ product }: Props) {
+  const { me } = useStore(meStore)();
+
   return (
     <div className={s.container}>
       <div className={s.imgStratch}>

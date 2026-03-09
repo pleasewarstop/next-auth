@@ -1,33 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
-import { TMe } from "@/api/types";
 import { ProductsList } from "@/components/ProductsList";
-import { InitData, useProducts } from "@/stores/products";
+import { useStore } from "@/components/StoresProvider/useStore";
+import { productsStore } from "@/stores/products";
 
-export interface Props {
-  initProducts: InitData;
-  initProductsError: string | null;
-  me: TMe;
-}
-export function Products({ initProducts, initProductsError, me }: Props) {
-  useEffect(() => {
-    useProducts.getState().init(initProducts, initProductsError);
-  }, [initProducts, initProductsError]);
-
-  const { inited, products, loading, error, fetchNextIfNeeded, abortIfNeeded } =
-    useProducts();
-
-  useEffect(() => {
-    return abortIfNeeded;
-  }, [abortIfNeeded]);
+export interface Props {}
+export function Products({}: Props) {
+  const { products, loading, error, fetchNextIfNeeded } =
+    useStore(productsStore)();
 
   return (
     <ProductsList
-      products={inited ? products : initProducts?.products || []}
-      me={me}
+      products={products}
       loading={loading}
-      error={inited ? error : initProductsError}
+      error={error}
       onFetchNext={fetchNextIfNeeded}
     />
   );
