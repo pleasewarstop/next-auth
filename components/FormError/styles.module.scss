@@ -1,0 +1,14 @@
+.container {
+  color: var(--color-error);
+  overflow: hidden;
+  transition:
+    height 0.15s 0s ease-in-out,
+    min-height 0.15s 0s ease-in-out,
+    opacity 0.15s 0s ease-in-out;
+  min-height: 0;
+  height: 0;
+  opacity: 0;
+  display: flex;
+  align-items: end;
+  font-size: 12px;
+}

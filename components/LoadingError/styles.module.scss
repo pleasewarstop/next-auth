@@ -1,0 +1,17 @@
+.container {
+  display: flex;
+  justify-content: center;
+  color: var(--color-error);
+  font-size: 17px;
+  margin-top: 48px;
+}
+
+.retry {
+  cursor: pointer;
+  margin-left: 4px;
+  color: var(--color-primary-light);
+
+  &:hover {
+    color: var(--color-primary);
+  }
+}

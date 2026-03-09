@@ -1,0 +1,39 @@
+{
+  "name": "next-auth",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@fontsource/roboto": "^5.2.10",
+    "axios": "^1.13.6",
+    "classnames": "^2.5.1",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "set-cookie-parser": "^3.0.1",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@types/loader-utils": "^3.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/set-cookie-parser": "^2.4.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "loader-utils": "^3.3.1",
+    "prettier": "^3.8.1",
+    "sass": "^1.97.3",
+    "stylelint": "^17.4.0",
+    "stylelint-config-css-modules": "^4.6.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-declaration-strict-value": "^1.11.1",
+    "stylelint-scss": "^7.0.0",
+    "typescript": "^5"
+  }
+}

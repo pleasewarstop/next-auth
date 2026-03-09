@@ -1,0 +1,16 @@
+.container {
+  border: 3px solid var(--color-grey);
+  border-top: 3px solid var(--color-black);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

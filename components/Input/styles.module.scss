@@ -1,0 +1,40 @@
+.container {
+  width: 100%;
+
+  &.invalid {
+    .input {
+      border-color: var(--color-error);
+    }
+  }
+
+  &.valid {
+    .input:not(:focus) {
+      border-color: var(--color-primary-light);
+    }
+  }
+}
+
+.input {
+  width: 100%;
+  border-radius: 15px;
+  border: 1px solid var(--color-grey);
+  box-shadow: var(--box-shadow);
+  font-size: 13px;
+  line-height: 15px;
+  padding: 11px 4px 11px 15px;
+
+  &:focus {
+    outline: none;
+    border: 1px solid var(--color-primary);
+  }
+
+  &::placeholder {
+    z-index: -1;
+    color: var(--color-text-black);
+    opacity: 0.58;
+  }
+}
+
+.error {
+  margin-left: 15px;
+}

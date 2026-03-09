@@ -1,0 +1,36 @@
+{
+    "extends": [
+        "stylelint-config-standard",
+        "stylelint-config-css-modules"
+    ],
+    "plugins": [
+        "stylelint-scss",
+        "stylelint-declaration-strict-value"
+    ],
+    "rules": {
+        "no-descending-specificity": null,
+        "selector-class-pattern": null,
+        "color-named": "never",
+        "scale-unlimited/declaration-strict-value": [
+            [
+                "color",
+                "background-color",
+                "border-color",
+                "border-top-color",
+                "border-right-color",
+                "border-bottom-color",
+                "border-left-color",
+                "outline-color",
+                "box-shadow"
+            ],
+            {
+                "ignoreKeywords": [
+                    "transparent",
+                    "currentColor"
+                ],
+                "expandShorthand": true
+            }
+        ],
+        "media-query-no-invalid": null
+    }
+}

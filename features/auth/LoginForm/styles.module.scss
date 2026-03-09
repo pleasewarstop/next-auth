@@ -1,0 +1,25 @@
+.form {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 147.5px;
+}
+
+.error.error {
+  font-size: 14px;
+  line-height: 18px;
+  justify-content: center;
+}
+
+.relative {
+  position: relative;
+}
+
+.spinner.spinner {
+  position: absolute;
+  border-width: 1px;
+  top: 2px;
+  right: -22px;
+}
