@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { TProduct } from "@/api/types";
-import { Button } from "@/components/Button";
-import s from "./styles.module.scss";
-import { useStore } from "@/components/StoresProvider/useStore";
 import { meStore } from "@/stores/me";
+import { Button } from "@/components/Button";
+import { useStore } from "@/components/StoresProvider/useStore";
+import s from "./styles.module.scss";
 
 export interface Props {
   product: TProduct;

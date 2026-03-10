@@ -1,23 +1,9 @@
 import { useContext } from "react";
 import { storesContext } from "@/components/StoresProvider";
-import {
-  Stores,
-  StoreName,
-  InferUseStore,
-} from "@/components/StoresProvider/types";
-import { nameByStoreMap } from "@/components/StoresProvider/consts";
+import { InferStoreInstance, Store } from "@/components/StoresProvider/types";
 
-export function useStore<
-  Store extends Stores[StoreName],
-  Name extends StoreName,
->(store: Store) {
-  const ctx = useContext(storesContext);
-  const name = nameByStoreMap.get(store) as Name;
+export function useStore<T extends Store>(store: T) {
+  const resolveStore = useContext(storesContext);
 
-  if (!ctx[name])
-    throw new Error(
-      `Store with name "${name}" is not initialized. Please add it in StoresProvider initData.`
-    );
-
-  return ctx[name] as InferUseStore<Store>;
+  return resolveStore(store) as InferStoreInstance<T>;
 }

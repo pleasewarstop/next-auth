@@ -1,47 +1,77 @@
-/* eslint-disable react-hooks/refs */
 "use client";
 
 import {
-  StoresContext,
-  StoreName,
-  InitDataByName,
+  InferFirstArg,
+  InitDataItem,
+  Store,
+  StoreInstance,
 } from "@/components/StoresProvider/types";
-import stores from "@/stores";
-import { createContext, ReactNode, useRef } from "react";
+import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
 
-export const storesContext = createContext<StoresContext>({});
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const initCtx = (store: Store) => ({}) as StoreInstance;
+export const storesContext = createContext(initCtx);
 
-type InitData = {
-  [K in StoreName]?: InitDataByName<K>;
-};
+const registeredStores: Record<string, Store> = {};
 
 interface Props {
-  initData?: InitData;
+  initData?: InitDataItem[];
   children: ReactNode;
 }
 export function StoresProvider({ initData, children }: Props) {
-  const ctxRef = useRef<StoresContext>({});
-  const usedInitDataRef = useRef<InitData>({});
+  const storesInstancesRef = useRef<Record<string, StoreInstance>>({});
+  const initDataByStore = useMemo(
+    () =>
+      initData?.reduce(
+        (acc, { storeName, data, error }) => {
+          acc[storeName] = { data, error };
+          return acc;
+        },
+        {} as Record<string, Pick<InitDataItem, "data" | "error">>
+      ),
+    [initData]
+  );
+  const usedInitDataByStoreRef = useRef<
+    Record<string, Pick<InitDataItem, "data" | "error">>
+  >({});
 
-  if (initData) {
-    if (usedInitDataRef.current !== initData) {
-      usedInitDataRef.current = initData;
+  const resolveStore = useCallback(
+    function resolveStore<T extends Store>(store: T) {
+      const { name } = store;
+      const storeInitData = initDataByStore?.[name];
+      const existedInstance = storesInstancesRef.current[name];
 
-      for (const key in initData) {
-        const name = key as StoreName;
-        ctxRef.current[name] = createStore(name, initData);
+      if (registeredStores[name] && registeredStores[name] !== store) {
+        throw new Error(
+          `Founded different stores with same name "${name}". It's not supported.`
+        );
       }
-    }
-  }
+      registeredStores[name] = store;
+
+      if (
+        existedInstance &&
+        usedInitDataByStoreRef.current[name] === storeInitData
+      ) {
+        return existedInstance;
+      }
+
+      if (!storeInitData) {
+        throw new Error(`StoreProvider have not initData for store "${name}"`);
+      }
+
+      const storeInstance = store(storeInitData as InferFirstArg<T>);
+
+      usedInitDataByStoreRef.current[name] = storeInitData;
+      storesInstancesRef.current[name] = storeInstance;
+
+      return storeInstance;
+    },
+    [initDataByStore]
+  );
 
   return (
-    <storesContext.Provider value={ctxRef.current}>
+    <storesContext.Provider value={resolveStore}>
       {children}
     </storesContext.Provider>
   );
-}
-
-function createStore<N extends StoreName>(name: N, initData: InitData) {
-  const creator = stores[name] as (arg: StoresContext[N]) => any;
-  return creator(initData[name] as StoresContext[N]);
 }
