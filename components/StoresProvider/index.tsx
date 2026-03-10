@@ -7,6 +7,7 @@ import {
   StoreInstance,
 } from "@/components/StoresProvider/types";
 import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
+import { refreshableSymbol } from "@/components/StoresProvider/refreshableStore";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: Store) => ({}) as StoreInstance;
@@ -41,6 +42,12 @@ export function StoresProvider({ initData, children }: Props) {
       const storeInitData = initDataByStore?.[name];
       const existedInstance = storesInstances[name];
 
+      if (!name) {
+        throw new Error(
+          `Anonymous function can not be used as store. Error in function ${store.toString()}.`
+        );
+      }
+
       if (registeredStores[name] && registeredStores[name] !== store) {
         throw new Error(
           `Founded different stores with same name "${name}". It's not supported.`
@@ -56,11 +63,9 @@ export function StoresProvider({ initData, children }: Props) {
         if (usedInitDataByStoreRef.current[name] === storeInitData) {
           return existedInstance;
         } else {
-          const { onRefresh } = existedInstance.getState();
-          if (
-            typeof document !== "undefined" &&
-            typeof onRefresh === "function"
-          ) {
+          if (typeof document !== "undefined" && store[refreshableSymbol]) {
+            const { onRefresh } = existedInstance.getState();
+
             onRefresh(storeInitData);
             usedInitDataByStoreRef.current[name] = storeInitData;
             return existedInstance;

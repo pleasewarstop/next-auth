@@ -1,10 +1,24 @@
+import { refreshableSymbol } from "@/components/StoresProvider/refreshableStore";
 import { StoreApi, UseBoundStore } from "zustand";
 
 export type StoreArg<T> = { data: T | null; error: string | null };
 
-export type StoreInstance = UseBoundStore<StoreApi<any>>;
+export type StoreInstance<T = any> = UseBoundStore<StoreApi<T>>;
 
-export type Store = (arg: StoreArg<any>) => StoreInstance;
+export type Store<A = any, T = any> = ((
+  arg: StoreArg<A>
+) => StoreInstance<T>) & {
+  [refreshableSymbol]?: true;
+};
+
+export type RefreshableStoreStateBase<A = any> = {
+  onRefresh: (arg: StoreArg<A>) => void;
+};
+
+export type RefreshableStore<A, T extends RefreshableStoreStateBase<A>> = Store<
+  A,
+  T
+>;
 
 export type InitDataItem = {
   storeName: any;
