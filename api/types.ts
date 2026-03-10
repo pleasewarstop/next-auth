@@ -1,3 +1,5 @@
+import { GenericAbortSignal } from "axios";
+
 export interface TLoginData {
   username: string;
   password: string;
@@ -21,6 +23,7 @@ export interface TProduct {
 export interface TProductsParams {
   limit: number;
   skip: number;
+  signal?: GenericAbortSignal;
 }
 
 export interface TProductsResponse {

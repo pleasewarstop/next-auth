@@ -5,7 +5,7 @@ import type { Configuration } from "webpack";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
-  reactStrictMode: false,
+  reactStrictMode: true,
   sassOptions: {
     additionalData: `
       @use "@/app/vars.scss" as *;

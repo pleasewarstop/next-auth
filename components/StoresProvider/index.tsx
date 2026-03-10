@@ -13,13 +13,13 @@ const initCtx = (store: Store) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
 
 const registeredStores: Record<string, Store> = {};
+const storesInstances: Record<string, StoreInstance> = {};
 
 interface Props {
   initData?: InitDataItem[];
   children: ReactNode;
 }
 export function StoresProvider({ initData, children }: Props) {
-  const storesInstancesRef = useRef<Record<string, StoreInstance>>({});
   const initDataByStore = useMemo(
     () =>
       initData?.reduce(
@@ -39,7 +39,7 @@ export function StoresProvider({ initData, children }: Props) {
     function resolveStore<T extends Store>(store: T) {
       const { name } = store;
       const storeInitData = initDataByStore?.[name];
-      const existedInstance = storesInstancesRef.current[name];
+      const existedInstance = storesInstances[name];
 
       if (registeredStores[name] && registeredStores[name] !== store) {
         throw new Error(
@@ -48,21 +48,30 @@ export function StoresProvider({ initData, children }: Props) {
       }
       registeredStores[name] = store;
 
-      if (
-        existedInstance &&
-        usedInitDataByStoreRef.current[name] === storeInitData
-      ) {
-        return existedInstance;
-      }
-
       if (!storeInitData) {
         throw new Error(`StoreProvider have not initData for store "${name}"`);
+      }
+
+      if (existedInstance) {
+        if (usedInitDataByStoreRef.current[name] === storeInitData) {
+          return existedInstance;
+        } else {
+          const { onRefresh } = existedInstance.getState();
+          if (
+            typeof document !== "undefined" &&
+            typeof onRefresh === "function"
+          ) {
+            onRefresh(storeInitData);
+            usedInitDataByStoreRef.current[name] = storeInitData;
+            return existedInstance;
+          }
+        }
       }
 
       const storeInstance = store(storeInitData as InferFirstArg<T>);
 
       usedInitDataByStoreRef.current[name] = storeInitData;
-      storesInstancesRef.current[name] = storeInstance;
+      storesInstances[name] = storeInstance;
 
       return storeInstance;
     },

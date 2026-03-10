@@ -24,13 +24,44 @@ const initValues: Values = {
 
 interface Actions {
   fetchNextIfNeeded: () => Promise<void>;
+  onRefresh: ({ data, error }: StoreArg<InitProducts>) => void;
+  abortIfNeeded: () => void;
 }
+
+let abortController: AbortController | null = null;
 
 export const productsStore = ({ data, error }: StoreArg<InitProducts>) =>
   create<Values & Actions>((set, get) => ({
     ...initValues,
     ...data,
     error,
+
+    // Если у стора есть prop onRefresh,
+    // То StoreProvider на клиенте не будет создавать новую сущность стора для каждой страницы
+    // А использует эту функцию для переинициализации единого стора на сессию
+    // Осталось нормально отразить это в типах
+    onRefresh({ data, error }) {
+      if (!data || error) {
+        set({
+          ...initValues,
+          ...data,
+          error,
+        });
+      } else {
+        const { products, total } = data;
+        const isProductsChanged = products.some(
+          ({ id }, i) => get().products[i]?.id !== id
+        );
+        if (isProductsChanged) {
+          set({
+            ...data,
+            error: null,
+          });
+        } else if (total !== get().total) {
+          set({ total });
+        }
+      }
+    },
 
     fetchNextIfNeeded: async () => {
       const skip = get().products.length;
@@ -39,9 +70,12 @@ export const productsStore = ({ data, error }: StoreArg<InitProducts>) =>
       set({ loading: true, error: null, refetching: Boolean(get().error) });
 
       try {
+        abortController = new AbortController();
+
         const { products, total } = await api.products({
           skip,
           limit: PER_PAGE,
+          signal: abortController.signal,
         });
 
         set({
@@ -57,5 +91,9 @@ export const productsStore = ({ data, error }: StoreArg<InitProducts>) =>
           error: e instanceof CanceledError ? null : productsErrorMsg(e),
         });
       }
+    },
+
+    abortIfNeeded: () => {
+      if (get().loading) abortController?.abort();
     },
   }));
