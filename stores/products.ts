@@ -3,8 +3,7 @@ import { CanceledError } from "axios";
 import { api } from "@/api/client";
 import { productsErrorMsg } from "@/api/errorMsg";
 import { TProductsResponse } from "@/api/types";
-import { StoreArg } from "@/components/StoresProvider/types";
-import { refreshableStore } from "@/components/StoresProvider/refreshableStore";
+import { sessionStore } from "@/components/StoresProvider/sessionStore";
 
 const PER_PAGE = 12;
 
@@ -12,63 +11,43 @@ type InitProducts = Pick<TProductsResponse, "products" | "total">;
 
 interface Values extends InitProducts {
   loading: boolean;
-  error: string | null;
-  refetching: boolean;
+  error: string | null | undefined;
+  retrying: boolean;
 }
 const initValues: Values = {
   products: [],
   total: 0,
   loading: false,
   error: null,
-  refetching: false,
+  retrying: false,
 };
 
 interface Actions {
-  onRefresh: ({ data, error }: StoreArg<InitProducts>) => void;
   fetchNextIfNeeded: () => Promise<void>;
   abortIfNeeded: () => void;
 }
 
 let abortController: AbortController | null = null;
 
-// По дефолту StoreProvider создаёт новую сущность стора для каждой страницы
-// refreshableStore - способ пользоваться на клиенте одной сущностью в течение сессии
-// для таких сторов обязателен экшн onRefresh, обрабатывающий новые SSR-данные
-export const productsStore = refreshableStore<InitProducts, Values & Actions>(
-  function productsStore({ data, error }) {
+export const productsStore = sessionStore<Values, Actions>(
+  function productsStore({ data, error, cache }) {
+    const isProductsChanged = data?.products?.some(
+      ({ id }, i) => cache?.products[i]?.id !== id
+    );
+    const products =
+      (isProductsChanged ? data?.products : cache?.products) || [];
+
     return create((set, get) => ({
       ...initValues,
       ...data,
+      products,
       error,
-
-      onRefresh({ data, error }) {
-        if (!data || error) {
-          set({
-            ...initValues,
-            ...data,
-            error,
-          });
-        } else {
-          const { products, total } = data;
-          const isProductsChanged = products.some(
-            ({ id }, i) => get().products[i]?.id !== id
-          );
-          if (isProductsChanged) {
-            set({
-              ...data,
-              error: null,
-            });
-          } else if (total !== get().total) {
-            set({ total });
-          }
-        }
-      },
 
       fetchNextIfNeeded: async () => {
         const skip = get().products.length;
         if (get().loading || (skip !== 0 && skip >= get().total)) return;
 
-        set({ loading: true, error: null, refetching: Boolean(get().error) });
+        set({ loading: true, error: null, retrying: Boolean(get().error) });
 
         try {
           abortController = new AbortController();
@@ -83,12 +62,12 @@ export const productsStore = refreshableStore<InitProducts, Values & Actions>(
             products: [...get().products, ...products],
             total,
             loading: false,
-            refetching: false,
+            retrying: false,
           });
         } catch (e: any) {
           set({
             loading: false,
-            refetching: false,
+            retrying: false,
             error: e instanceof CanceledError ? null : productsErrorMsg(e),
           });
         }

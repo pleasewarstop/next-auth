@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource/roboto";
 import "./globals.scss";
-import { ScrollRestoration } from "@/components/ScrollRestoration";
 
 export const metadata: Metadata = {
   title: "Auth App",
@@ -14,7 +13,6 @@ interface Props {
 export default async function Layout({ children }: Props) {
   return (
     <html lang="en">
-      <ScrollRestoration />
       <body>{children}</body>
     </html>
   );

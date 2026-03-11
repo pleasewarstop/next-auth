@@ -8,7 +8,7 @@ import { productsStore } from "@/stores/products";
 interface Props {}
 export default function HomeClient({}: Props) {
   const hasFooter = useStore(productsStore)((p) =>
-    Boolean(p.products.length === p.total || p.error || p.refetching)
+    Boolean(p.products.length === p.total || p.error || p.retrying)
   );
   return (
     <Page hasFooter={hasFooter}>

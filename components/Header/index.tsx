@@ -21,21 +21,26 @@ export function Header({}: Props) {
   return (
     <header className={s.container}>
       <PageRow className={s.content}>
-        <Link
-          href={routes.home()}
-          className={s.logo}
-          onClick={() => {
-            if (pathname === routes.home()) {
-              window.scrollTo(0, 0);
-            }
-          }}
-        >
-          <Image width={38} height={38} src="/img/stones.png" alt="logo" />
-          Abelohost Shop
-        </Link>
+        <div className={s.left}>
+          <Link
+            href={routes.home()}
+            className={s.logo}
+            onClick={() => {
+              if (pathname === routes.home()) {
+                window.scrollTo(0, 0);
+              }
+            }}
+          >
+            <Image width={38} height={38} src="/img/stones.png" alt="logo" />
+            Abelohost Shop
+          </Link>
+          <Link href={routes.login()} className={s.login}>
+            Login
+          </Link>
+        </div>
         <div className={s.right}>
           <LoadingError className={s.error} error={error} />
-          {me ? (
+          {me && (
             <>
               <span>
                 {me.firstName} {me.lastName}
@@ -50,10 +55,6 @@ export function Header({}: Props) {
                 Logout
               </span>
             </>
-          ) : (
-            pathname !== routes.login() && (
-              <Link href={routes.login()}>Login</Link>
-            )
           )}
         </div>
       </PageRow>

@@ -11,15 +11,9 @@
   display: flex;
 }
 
-.content {
-  justify-content: space-between;
-}
-
-.logo {
+.left {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-grey);
+  gap: 14px;
 }
 
 .right {
@@ -38,15 +32,30 @@
   }
 }
 
-.logout {
-  padding: 8px;
-  margin-right: -8px;
+.content {
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-grey);
+}
+
+.logout,
+.login {
   cursor: pointer;
   color: var(--color-primary-light);
 
   &:hover {
     color: var(--color-primary);
   }
+}
+
+.logout {
+  padding: 8px;
+  margin-right: -8px;
 }
 
 .error.error {

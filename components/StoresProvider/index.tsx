@@ -1,20 +1,28 @@
 "use client";
 
 import {
-  InferFirstArg,
+  cacheKey,
+  getStoreSession,
+} from "@/components/StoresProvider/sessionStore";
+import {
   InitDataItem,
   Store,
   StoreInstance,
 } from "@/components/StoresProvider/types";
-import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
-import { refreshableSymbol } from "@/components/StoresProvider/refreshableStore";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: Store) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
 
 const registeredStores: Record<string, Store> = {};
-const storesInstances: Record<string, StoreInstance> = {};
 
 interface Props {
   initData?: InitDataItem[];
@@ -24,23 +32,23 @@ export function StoresProvider({ initData, children }: Props) {
   const initDataByStore = useMemo(
     () =>
       initData?.reduce(
-        (acc, { storeName, data, error }) => {
-          acc[storeName] = { data, error };
+        (acc, { storeName, ...rest }) => {
+          acc[storeName] = rest;
           return acc;
         },
-        {} as Record<string, Pick<InitDataItem, "data" | "error">>
+        {} as Record<string, Omit<InitDataItem, "storeName">>
       ),
     [initData]
   );
+  const storesInstancesRef = useRef<Record<string, StoreInstance>>({});
   const usedInitDataByStoreRef = useRef<
-    Record<string, Pick<InitDataItem, "data" | "error">>
+    Record<string, Omit<InitDataItem, "storeName">>
   >({});
 
   const resolveStore = useCallback(
     function resolveStore<T extends Store>(store: T) {
       const { name } = store;
       const storeInitData = initDataByStore?.[name];
-      const existedInstance = storesInstances[name];
 
       if (!name) {
         throw new Error(
@@ -59,29 +67,58 @@ export function StoresProvider({ initData, children }: Props) {
         throw new Error(`StoreProvider have not initData for store "${name}"`);
       }
 
-      if (existedInstance) {
-        if (usedInitDataByStoreRef.current[name] === storeInitData) {
-          return existedInstance;
-        } else {
-          if (typeof document !== "undefined" && store[refreshableSymbol]) {
-            const { onRefresh } = existedInstance.getState();
-
-            onRefresh(storeInitData);
-            usedInitDataByStoreRef.current[name] = storeInitData;
-            return existedInstance;
-          }
-        }
+      if (usedInitDataByStoreRef.current[name] === storeInitData) {
+        return storesInstancesRef.current[name];
       }
 
-      const storeInstance = store(storeInitData as InferFirstArg<T>);
-
       usedInitDataByStoreRef.current[name] = storeInitData;
-      storesInstances[name] = storeInstance;
+      storesInstancesRef.current[name] = store(
+        typeof window === "undefined"
+          ? storeInitData
+          : {
+              ...storeInitData,
+              cache: getStoreSession(store),
+            }
+      );
 
-      return storeInstance;
+      return storesInstancesRef.current[name];
     },
     [initDataByStore]
   );
+
+  useEffect(() => {
+    for (const name in storesInstancesRef.current) {
+      const store = registeredStores[name];
+      const sessionCache = getStoreSession(store);
+      if (!sessionCache) continue;
+
+      function filterFunctions(obj: any) {
+        const filtered: any = {};
+        for (const key in obj) {
+          if (typeof obj[key] === "function") continue;
+          filtered[key] = obj[key];
+        }
+        return filtered;
+      }
+
+      storesInstancesRef.current[name].setState(
+        filterFunctions(
+          store({
+            data: filterFunctions(storesInstancesRef.current[name].getState()),
+            cache: sessionCache,
+          }).getState()
+        )
+      );
+    }
+
+    function onBeforeUnload() {
+      for (const name in registeredStores) {
+        sessionStorage.removeItem(cacheKey(registeredStores[name]));
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
 
   return (
     <storesContext.Provider value={resolveStore}>

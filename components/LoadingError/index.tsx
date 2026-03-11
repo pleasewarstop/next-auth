@@ -2,7 +2,7 @@ import cn from "classnames";
 import s from "./styles.module.scss";
 
 export interface Props {
-  error: string | null;
+  error?: string | null;
   className?: string;
   onRetry?: () => void;
 }
