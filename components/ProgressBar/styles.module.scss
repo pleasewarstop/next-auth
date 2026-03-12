@@ -1,0 +1,21 @@
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--color-primary-light);
+}
+
+@keyframes ending {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

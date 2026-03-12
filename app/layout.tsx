@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource/roboto";
+import "@/components/ProgressBar/useProgress";
 import "./globals.scss";
 
 export const metadata: Metadata = {

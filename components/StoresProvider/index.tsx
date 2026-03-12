@@ -71,8 +71,8 @@ export function StoresProvider({ initData, children }: Props) {
       }
 
       usedInitDataByStoreRef.current[name] = storeInitData;
-
       storesInstancesRef.current[name] = store(storeInitData);
+
       const cache = getStoreCache(store);
       if (cache && !(unloadedKey in sessionStorage)) {
         storesInstancesRef.current[name].getState().restore(cache);

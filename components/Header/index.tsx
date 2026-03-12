@@ -10,6 +10,7 @@ import { PageRow } from "@/components/Page/Row";
 import { LoadingError } from "@/components/LoadingError";
 import { useStore } from "@/components/StoresProvider/useStore";
 import s from "./styles.module.scss";
+import { ProgressBar } from "@/components/ProgressBar";
 
 interface Props {}
 export function Header({}: Props) {
@@ -20,6 +21,8 @@ export function Header({}: Props) {
 
   return (
     <header className={s.container}>
+      <ProgressBar />
+
       <PageRow className={s.content}>
         <div className={s.left}>
           <Link
