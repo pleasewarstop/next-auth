@@ -72,14 +72,11 @@ export function StoresProvider({ initData, children }: Props) {
 
       usedInitDataByStoreRef.current[name] = storeInitData;
 
-      storesInstancesRef.current[name] = store(
-        typeof window === "undefined" || unloadedKey in sessionStorage
-          ? storeInitData
-          : {
-              ...storeInitData,
-              cache: getStoreSession(store),
-            }
-      );
+      storesInstancesRef.current[name] = store(storeInitData);
+      const cache = getStoreSession(store);
+      if (cache && !(unloadedKey in sessionStorage)) {
+        storesInstancesRef.current[name].getState().restore(cache);
+      }
 
       return storesInstancesRef.current[name];
     },
@@ -93,28 +90,8 @@ export function StoresProvider({ initData, children }: Props) {
 
       for (const name in storesInstancesRef.current) {
         const store = registeredStores[name];
-        const sessionCache = getStoreSession(store);
-        if (!sessionCache) continue;
-
-        function filterFunctions(obj: any) {
-          const filtered: any = {};
-          for (const key in obj) {
-            if (typeof obj[key] === "function") continue;
-            filtered[key] = obj[key];
-          }
-          return filtered;
-        }
-
-        storesInstancesRef.current[name].setState(
-          filterFunctions(
-            store({
-              data: filterFunctions(
-                storesInstancesRef.current[name].getState()
-              ),
-              cache: sessionCache,
-            }).getState()
-          )
-        );
+        const cache = getStoreSession(store);
+        if (cache) storesInstancesRef.current[name].getState().restore(cache);
       }
     }
 

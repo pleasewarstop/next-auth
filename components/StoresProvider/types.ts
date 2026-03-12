@@ -1,14 +1,18 @@
 import { StoreApi, UseBoundStore } from "zustand";
 
-export type StoreArg<T = undefined> = {
-  data: (T extends object ? Partial<T> : T) | null;
+export type StoreArg<D = undefined> = {
+  data: D | null;
   error?: string | null;
-  cache?: T;
 };
 
 export type StoreInstance<T = any> = UseBoundStore<StoreApi<T>>;
 
-export type Store<T = any> = (arg: StoreArg<T>) => StoreInstance<T>;
+export type Store<D = any, T = any> = (arg: StoreArg<D>) => StoreInstance<T>;
+
+export type RestorableStore<D = any, V = any, A = any> = Store<
+  D,
+  V & A & { restore: (cache: V) => void }
+>;
 
 export type InitDataItem = {
   storeName: any;

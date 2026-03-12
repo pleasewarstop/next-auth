@@ -7,9 +7,9 @@ import { sessionStore } from "@/components/StoresProvider/sessionStore";
 
 const PER_PAGE = 12;
 
-type InitProducts = Pick<TProductsResponse, "products" | "total">;
+type ProductsData = Pick<TProductsResponse, "products" | "total">;
 
-interface Values extends InitProducts {
+interface Values extends ProductsData {
   loading: boolean;
   error: string | null | undefined;
   retrying: boolean;
@@ -29,19 +29,21 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = sessionStore<Values, Actions>(
-  function productsStore({ data, error, cache }) {
-    const isProductsChanged = data?.products?.some(
-      ({ id }, i) => cache?.products[i]?.id !== id
-    );
-    const products =
-      (isProductsChanged ? data?.products : cache?.products) || [];
-
+export const productsStore = sessionStore<ProductsData, Values, Actions>(
+  function productsStore({ data, error }) {
     return create((set, get) => ({
       ...initValues,
       ...data,
-      products,
       error,
+
+      restore: (cache) => {
+        if (error) return;
+
+        const isProductsChanged = data?.products?.some(
+          ({ id }, i) => cache.products[i].id !== id
+        );
+        if (!isProductsChanged) set({ products: cache.products });
+      },
 
       fetchNextIfNeeded: async () => {
         const skip = get().products.length;

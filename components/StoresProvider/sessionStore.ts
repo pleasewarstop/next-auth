@@ -1,8 +1,15 @@
-import { InferFirstArg, Store } from "@/components/StoresProvider/types";
+import {
+  RestorableStore,
+  InferFirstArg,
+  Store,
+} from "@/components/StoresProvider/types";
 
-export function sessionStore<T, A, S extends Store<T & A> = Store<T & A>>(
-  store: S
-) {
+export function sessionStore<
+  D,
+  V,
+  A,
+  S extends RestorableStore<D, V, A> = RestorableStore<D, V, A>,
+>(store: S) {
   const ref = {
     [store.name]: (arg: InferFirstArg<S>) => {
       if (typeof sessionStorage === "undefined") return store(arg);
@@ -20,10 +27,11 @@ export function sessionStore<T, A, S extends Store<T & A> = Store<T & A>>(
 
   const wrappedStore = ref[store.name];
 
-  return wrappedStore as Store<T & A>;
+  return wrappedStore as RestorableStore<V, A>;
 }
 
 export const getStoreSession = <S extends Store>(store: S) => {
+  if (typeof window === "undefined") return null;
   const data = JSON.parse(sessionStorage.getItem(cacheKey(store)) || "null");
   return data;
 };
