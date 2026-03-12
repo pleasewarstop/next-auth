@@ -15,12 +15,14 @@ interface Values {
   id: number;
   width: number;
   ending: boolean;
+  error: string | null;
 }
 
 const initValues: Values = {
   id: currentId,
   width: 0,
   ending: false,
+  error: null,
 };
 
 interface Actions {
@@ -60,6 +62,10 @@ export const useProgress = create<Values & Actions>((set, get) => ({
             retrying = true;
             clientRouter.push(pathname);
             return;
+          } else {
+            const error = `Failed to change route from ${window.location.pathname} to ${pathname}. Please try again.`;
+            set({ ...initValues, error });
+            throw new Error(error);
           }
         } else if (window.location.pathname === pathname) {
           set(initValues);

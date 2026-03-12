@@ -6,6 +6,16 @@
   background-color: var(--color-primary-light);
 }
 
+.error {
+  font-size: 14px;
+  line-height: 18px;
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-error);
+}
+
 @keyframes ending {
   0% {
     opacity: 1;
