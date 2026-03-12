@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  cacheKey,
-  getStoreSession,
-} from "@/components/StoresProvider/sessionStore";
+import { getStoreSession } from "@/components/StoresProvider/sessionStore";
 import {
   InitDataItem,
   Store,
@@ -17,6 +14,8 @@ import {
   useMemo,
   useRef,
 } from "react";
+
+const unloadedKey = "unloaded";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: Store) => ({}) as StoreInstance;
@@ -72,8 +71,9 @@ export function StoresProvider({ initData, children }: Props) {
       }
 
       usedInitDataByStoreRef.current[name] = storeInitData;
+
       storesInstancesRef.current[name] = store(
-        typeof window === "undefined"
+        typeof window === "undefined" || unloadedKey in sessionStorage
           ? storeInitData
           : {
               ...storeInitData,
@@ -87,34 +87,40 @@ export function StoresProvider({ initData, children }: Props) {
   );
 
   useEffect(() => {
-    for (const name in storesInstancesRef.current) {
-      const store = registeredStores[name];
-      const sessionCache = getStoreSession(store);
-      if (!sessionCache) continue;
+    if (unloadedKey in sessionStorage) {
+      sessionStorage.removeItem(unloadedKey);
+      window.history.scrollRestoration = "auto";
 
-      function filterFunctions(obj: any) {
-        const filtered: any = {};
-        for (const key in obj) {
-          if (typeof obj[key] === "function") continue;
-          filtered[key] = obj[key];
+      for (const name in storesInstancesRef.current) {
+        const store = registeredStores[name];
+        const sessionCache = getStoreSession(store);
+        if (!sessionCache) continue;
+
+        function filterFunctions(obj: any) {
+          const filtered: any = {};
+          for (const key in obj) {
+            if (typeof obj[key] === "function") continue;
+            filtered[key] = obj[key];
+          }
+          return filtered;
         }
-        return filtered;
-      }
 
-      storesInstancesRef.current[name].setState(
-        filterFunctions(
-          store({
-            data: filterFunctions(storesInstancesRef.current[name].getState()),
-            cache: sessionCache,
-          }).getState()
-        )
-      );
+        storesInstancesRef.current[name].setState(
+          filterFunctions(
+            store({
+              data: filterFunctions(
+                storesInstancesRef.current[name].getState()
+              ),
+              cache: sessionCache,
+            }).getState()
+          )
+        );
+      }
     }
 
     function onBeforeUnload() {
-      for (const name in registeredStores) {
-        sessionStorage.removeItem(cacheKey(registeredStores[name]));
-      }
+      window.sessionStorage.setItem(unloadedKey, "");
+      window.history.scrollRestoration = "manual";
     }
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
