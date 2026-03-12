@@ -1,12 +1,21 @@
+import { clientRouter } from "@/components/ProgressBar";
 import { create } from "zustand";
+
+const START_WIDTH = 5;
+const START_TIME = 270;
+const RISING_TIME = 2700;
+const RETRY_TIME = 4000;
+const MAX_RETRIES = 7;
+
+let currentId = 0;
+let retriesCount = 0;
+let retrying = false;
 
 interface Values {
   id: number;
   width: number;
   ending: boolean;
 }
-
-let currentId = 0;
 
 const initValues: Values = {
   id: currentId,
@@ -25,34 +34,44 @@ export const useProgress = create<Values & Actions>((set, get) => ({
     const time = Date.now();
     const id = ++currentId;
 
-    const SLOW_WIDTH = 5;
-    const SLOW_TIME = 270;
-    const RISING_TIME = 2700;
+    let stopped = retrying ? true : false;
 
-    let stopped = false;
+    set({ id, width: retrying ? 100 : 0, ending: false });
+    if (retrying) {
+      retriesCount += 1;
+      retrying = false;
+    } else retriesCount = 0;
 
-    set({ id, width: 0 });
     applyProgress();
 
     function applyProgress() {
       if (get().id !== id) return;
 
       const diff = Date.now() - time;
-      if (diff < SLOW_TIME) {
-        set({ width: (SLOW_WIDTH * diff) / SLOW_TIME });
+      if (diff < START_TIME) {
+        set({ width: (START_WIDTH * diff) / START_TIME });
         requestAnimationFrame(applyProgress);
         return;
       }
 
-      if (stopped && window.location.pathname === pathname) {
-        set(initValues);
-        return;
+      if (stopped) {
+        if (diff > RETRY_TIME) {
+          if (retriesCount <= MAX_RETRIES) {
+            retrying = true;
+            clientRouter.push(pathname);
+            return;
+          }
+        } else if (window.location.pathname === pathname) {
+          set(initValues);
+          return;
+        }
       }
 
       if (diff < RISING_TIME) {
         set({
           width:
-            SLOW_WIDTH + ((diff - SLOW_TIME) / (RISING_TIME - SLOW_TIME)) * 100,
+            START_WIDTH +
+            ((diff - START_TIME) / (RISING_TIME - START_TIME)) * 100,
         });
       } else if (!get().ending) set({ width: 100, ending: true });
 
