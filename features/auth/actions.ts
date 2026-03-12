@@ -26,6 +26,10 @@ export async function logout() {
   cookieStore.delete(refreshTokenKey);
 }
 
+export async function getMe() {
+  return apiServer.me();
+}
+
 async function setTokens(res: AxiosResponse) {
   const cookieStore = await cookies();
 

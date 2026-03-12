@@ -80,7 +80,9 @@ export function LoginForm({ className }: Props) {
       <Button disabled={submitting || submitted}>
         <span className={s.relative}>
           Login
-          {submitting && <Spinner className={s.spinner} size={14} />}
+          {submitting && (
+            <Spinner className={s.spinner} size={14} borderWidth={1} />
+          )}
         </span>
       </Button>
       <FormError error={(errorSubmit as any)?.message} className={s.error} />

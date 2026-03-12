@@ -9,6 +9,4 @@ export const productsErrorMsg = (e: any) =>
   errorMsg(e, "Failed to load products");
 
 export const meErrorMsg = (e: any) =>
-  e?.status === 401
-    ? null
-    : errorMsg(e, "Failed to load user. Please reload page.");
+  e?.status === 401 ? null : errorMsg(e, "Failed to load user");

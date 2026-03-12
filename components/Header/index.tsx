@@ -11,10 +11,11 @@ import { LoadingError } from "@/components/LoadingError";
 import { useStore } from "@/components/StoresProvider/useStore";
 import s from "./styles.module.scss";
 import { ProgressBar } from "@/components/ProgressBar";
+import { Spinner } from "@/components/Spinner";
 
 interface Props {}
 export function Header({}: Props) {
-  const { me, error } = useStore(meStore)();
+  const { me, loading, error, refetch } = useStore(meStore)();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -42,7 +43,7 @@ export function Header({}: Props) {
           </Link>
         </div>
         <div className={s.right}>
-          <LoadingError className={s.error} error={error} />
+          <LoadingError className={s.error} error={error} onRetry={refetch} />
           {me && (
             <>
               <span>
@@ -59,6 +60,7 @@ export function Header({}: Props) {
               </span>
             </>
           )}
+          {loading && <Spinner size={14} borderWidth={1} />}
         </div>
       </PageRow>
     </header>
