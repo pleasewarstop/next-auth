@@ -1,6 +1,6 @@
 "use client";
 
-import { getStoreSession } from "@/components/StoresProvider/sessionStore";
+import { getStoreCache } from "@/components/StoresProvider/restorableStore";
 import {
   InitDataItem,
   Store,
@@ -73,7 +73,7 @@ export function StoresProvider({ initData, children }: Props) {
       usedInitDataByStoreRef.current[name] = storeInitData;
 
       storesInstancesRef.current[name] = store(storeInitData);
-      const cache = getStoreSession(store);
+      const cache = getStoreCache(store);
       if (cache && !(unloadedKey in sessionStorage)) {
         storesInstancesRef.current[name].getState().restore(cache);
       }
@@ -90,7 +90,7 @@ export function StoresProvider({ initData, children }: Props) {
 
       for (const name in storesInstancesRef.current) {
         const store = registeredStores[name];
-        const cache = getStoreSession(store);
+        const cache = getStoreCache(store);
         if (cache) storesInstancesRef.current[name].getState().restore(cache);
       }
     }

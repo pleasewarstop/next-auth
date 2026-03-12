@@ -11,6 +11,6 @@ interface Actions {}
 
 export const meStore = ({ data, error }: StoreArg<TUser>) =>
   create<Values & Actions>(() => ({
-    me: data as TUser | null,
+    me: data,
     error,
   }));
