@@ -4,7 +4,7 @@ import { create } from "zustand";
 const START_WIDTH = 5;
 const START_TIME = 270;
 const RISING_TIME = 2700;
-const RETRY_TIME = 4000;
+const RETRY_TIME = 8000;
 const MAX_RETRIES = 7;
 
 let currentId = 0;
