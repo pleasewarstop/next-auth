@@ -4,7 +4,7 @@ import { create } from "zustand";
 const GUARANTEED_WIDTH = 5;
 const GUARANTEED_TIME = 270;
 const RISING_TIME = 2700;
-const RETRY_DELAY = 5000;
+const RETRY_DELAY = 3000;
 const MAX_RETRIES = 7;
 
 let currentId = 0;
@@ -58,7 +58,10 @@ export const useProgress = create<Values & Actions>((set, get) => ({
       }
 
       if (stoppedTime) {
-        if (window.location.pathname === pathname) {
+        if (
+          process.env.NODE_ENV !== "development" ||
+          window.location.pathname === pathname
+        ) {
           set(initValues);
           return;
         } else if (Date.now() - stoppedTime > RETRY_DELAY) {
