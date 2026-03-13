@@ -30,8 +30,10 @@ interface Actions {
 let abortController: AbortController | null = null;
 
 export const productsStore = sessionStore<ProductsData, Values, Actions>(
-  function productsStore({ data, error }) {
-    return create((set, get) => ({
+  "products",
+
+  ({ data, error }) =>
+    create((set, get) => ({
       ...initValues,
       ...data,
       error,
@@ -78,6 +80,5 @@ export const productsStore = sessionStore<ProductsData, Values, Actions>(
       abortIfNeeded: () => {
         if (get().loading) abortController?.abort();
       },
-    }));
-  }
+    }))
 );

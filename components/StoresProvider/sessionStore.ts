@@ -6,10 +6,11 @@ export function sessionStore<
   V,
   A,
   S extends RestorableStore<D, V, A> = RestorableStore<D, V, A>,
->(store: S) {
-  const cacheKey = store.name;
+>(name: string, store: S) {
+  const cacheKey = `store-${name}`;
 
   return restorableStore<D, V, A>(
+    name,
     store,
     () => JSON.parse(sessionStorage.getItem(cacheKey) || "null"),
     (val) => {

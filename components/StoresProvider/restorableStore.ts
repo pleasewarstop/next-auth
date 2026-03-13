@@ -1,35 +1,33 @@
-import {
-  RestorableStore,
-  InferFirstArg,
-  Store,
-} from "@/components/StoresProvider/types";
+import { RestorableStore } from "@/components/StoresProvider/types";
+import { store as storeBase } from "./store";
 
 const cacheGetters: Record<string, any> = {};
 
-export const getStoreCache = <S extends Store>(store: S) =>
-  typeof window === "undefined" || !cacheGetters[store.name]
+export const getStoreCache = (name: string) =>
+  typeof window === "undefined" || !cacheGetters[name]
     ? null
-    : cacheGetters[store.name]();
+    : cacheGetters[name]();
 
 export function restorableStore<
   D,
   V,
   A,
   S extends RestorableStore<D, V, A> = RestorableStore<D, V, A>,
->(store: S, getCache: () => V, subscribe: (value: V & A) => void) {
-  const ref = {
-    [store.name]: (arg: InferFirstArg<S>) => {
-      const storeInstance = store(arg);
-      if (typeof window === "undefined") return storeInstance;
+>(
+  name: string,
+  store: S,
+  getCache: () => V,
+  subscribe: (value: V & A) => void
+) {
+  const wrappedStore: RestorableStore<D, V, A> = (arg) => {
+    const storeInstance = store(arg);
+    if (typeof window === "undefined") return storeInstance;
 
-      cacheGetters[store.name] = getCache;
-      storeInstance.subscribe(subscribe);
+    cacheGetters[name] = getCache;
+    storeInstance.subscribe(subscribe);
 
-      return storeInstance;
-    },
-  } as Record<string, Store>;
+    return storeInstance;
+  };
 
-  const wrappedStore = ref[store.name];
-
-  return wrappedStore as RestorableStore<D, V, A>;
+  return storeBase<D, V & A>(name, wrappedStore);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { getStoreCache } from "@/components/StoresProvider/restorableStore";
+import { getStoreName } from "@/components/StoresProvider/store";
 import {
   InitDataItem,
   Store,
@@ -20,8 +21,6 @@ const unloadedKey = "unloaded";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: Store) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
-
-const registeredStores: Record<string, Store> = {};
 
 interface Props {
   initData?: InitDataItem[];
@@ -46,21 +45,8 @@ export function StoresProvider({ initData, children }: Props) {
 
   const resolveStore = useCallback(
     function resolveStore<T extends Store>(store: T) {
-      const { name } = store;
+      const name = getStoreName(store);
       const storeInitData = initDataByStore?.[name];
-
-      if (!name) {
-        throw new Error(
-          `Anonymous function can not be used as store. Error in function ${store.toString()}.`
-        );
-      }
-
-      if (registeredStores[name] && registeredStores[name] !== store) {
-        throw new Error(
-          `Founded different stores with same name "${name}". It's not supported.`
-        );
-      }
-      registeredStores[name] = store;
 
       if (!storeInitData) {
         throw new Error(`StoreProvider have not initData for store "${name}"`);
@@ -73,7 +59,7 @@ export function StoresProvider({ initData, children }: Props) {
       usedInitDataByStoreRef.current[name] = storeInitData;
       storesInstancesRef.current[name] = store(storeInitData);
 
-      const cache = getStoreCache(store);
+      const cache = getStoreCache(name);
       if (cache && !(unloadedKey in sessionStorage)) {
         storesInstancesRef.current[name].getState().restore(cache);
       }
@@ -89,8 +75,7 @@ export function StoresProvider({ initData, children }: Props) {
       window.history.scrollRestoration = "auto";
 
       for (const name in storesInstancesRef.current) {
-        const store = registeredStores[name];
-        const cache = getStoreCache(store);
+        const cache = getStoreCache(name);
         if (cache) storesInstancesRef.current[name].getState().restore(cache);
       }
     }

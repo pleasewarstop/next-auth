@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { StoreArg } from "@/components/StoresProvider/types";
 import { TUser } from "@/api/types";
 import { getMe } from "@/features/auth/actions";
 import { meErrorMsg } from "@/api/errorMsg";
+import { store } from "@/components/StoresProvider/store";
 
 interface Values {
   me: TUser | null;
@@ -20,8 +20,8 @@ interface Actions {
   refetch: () => void;
 }
 
-export const meStore = ({ data, error }: StoreArg<TUser>) =>
-  create<Values & Actions>((set) => ({
+export const meStore = store<TUser, Values & Actions>("me", ({ data, error }) =>
+  create((set) => ({
     ...initValues,
     me: data,
     error,
@@ -35,4 +35,5 @@ export const meStore = ({ data, error }: StoreArg<TUser>) =>
         set({ loading: false, error: meErrorMsg(e) });
       }
     },
-  }));
+  }))
+);
