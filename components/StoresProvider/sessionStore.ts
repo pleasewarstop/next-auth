@@ -5,12 +5,11 @@ export function sessionStore<
   D,
   V,
   A,
-  C = V,
-  S extends RestorableSSRStore<D, V, A, C> = RestorableSSRStore<D, V, A, C>,
+  S extends RestorableSSRStore<D, V, A, V> = RestorableSSRStore<D, V, A, V>,
 >(name: string, store: S) {
   const cacheKey = `store-${name}`;
 
-  return restorableSsrStore<D, V, A, C>(
+  return restorableSsrStore<D, V, A, V>(
     name,
     store,
     () => JSON.parse(sessionStorage.getItem(cacheKey) || "null"),

@@ -32,14 +32,14 @@ let abortController: AbortController | null = null;
 export const productsStore = sessionStore<ProductsData, Values, Actions>(
   "products",
 
-  ({ data, error: dError }) =>
+  ({ data, error }) =>
     create((set, get) => ({
       ...initValues,
       ...data,
-      error: dError,
+      error,
 
       restore: (cache) => {
-        if (dError) return;
+        if (error) return;
 
         const isProductsChanged = data?.products?.some(
           ({ id }, i) => cache.products[i].id !== id
