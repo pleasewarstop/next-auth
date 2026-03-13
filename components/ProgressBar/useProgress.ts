@@ -69,7 +69,7 @@ export const useProgress = create<Values & Actions>((set, get) => ({
 
     promise.finally(() => {
       stopped = true;
-      set(initValues);
+      if (get().id === id) set(initValues);
     });
   },
 }));
