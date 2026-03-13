@@ -4,7 +4,7 @@ import { create } from "zustand";
 const START_WIDTH = 5;
 const START_TIME = 270;
 const RISING_TIME = 2700;
-const RETRY_TIME = 8000;
+const RETRY_DELAY = 5000;
 const MAX_RETRIES = 7;
 
 let currentId = 0;
@@ -36,7 +36,7 @@ export const useProgress = create<Values & Actions>((set, get) => ({
     const time = Date.now();
     const id = ++currentId;
 
-    let stopped = retrying ? true : false;
+    let stoppedTime = 0;
 
     set({ id, width: retrying ? 100 : 0, ending: false });
     if (retrying) {
@@ -56,8 +56,11 @@ export const useProgress = create<Values & Actions>((set, get) => ({
         return;
       }
 
-      if (stopped) {
-        if (diff > RETRY_TIME) {
+      if (stoppedTime) {
+        if (window.location.pathname === pathname) {
+          set(initValues);
+          return;
+        } else if (Date.now() - stoppedTime > RETRY_DELAY) {
           if (retriesCount <= MAX_RETRIES) {
             retrying = true;
             clientRouter.push(pathname);
@@ -67,9 +70,6 @@ export const useProgress = create<Values & Actions>((set, get) => ({
             set({ ...initValues, error });
             throw new Error(error);
           }
-        } else if (window.location.pathname === pathname) {
-          set(initValues);
-          return;
         }
       }
 
@@ -85,7 +85,7 @@ export const useProgress = create<Values & Actions>((set, get) => ({
     }
 
     promise.finally(() => {
-      stopped = true;
+      stoppedTime = Date.now();
     });
   },
 }));
