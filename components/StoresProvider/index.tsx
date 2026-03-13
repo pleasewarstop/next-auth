@@ -44,12 +44,14 @@ export function StoresProvider({ initData, children }: Props) {
   >({});
 
   const resolveStore = useCallback(
-    function resolveStore<T extends SSRStore>(store: T) {
+    function <T extends SSRStore>(store: T) {
       const name = getStoreName(store);
       const storeInitData = initDataByStore?.[name];
 
       if (!storeInitData) {
-        throw new Error(`StoreProvider have not initData for store "${name}"`);
+        throw new Error(
+          `StoreProvider have not initData for ssrStore "${name}"`
+        );
       }
 
       if (usedInitDataByStoreRef.current[name] === storeInitData) {

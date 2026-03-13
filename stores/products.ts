@@ -65,7 +65,7 @@ export const productsStore = sessionStore<ProductsData, Values, Actions>(
           });
 
           set({
-            products: [...get().products, ...resProducts],
+            products: [...products, ...resProducts],
             total,
             loading: false,
             retrying: false,
