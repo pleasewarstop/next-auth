@@ -1,16 +1,11 @@
-import { clientRouter } from "@/components/ProgressBar";
 import { create } from "zustand";
 
 const DELAY_TIME = 500;
 const GUARANTEED_WIDTH = 5;
 const GUARANTEED_TIME = 770;
 const RISING_TIME = 3200;
-const RETRY_DELAY = 3000;
-const MAX_RETRIES = 7;
 
 let currentId = 0;
-let retriesCount = 0;
-let retrying = false;
 
 interface Values {
   id: number;
@@ -33,17 +28,13 @@ interface Actions {
 export const useProgress = create<Values & Actions>((set, get) => ({
   ...initValues,
 
-  start(promise, pathname) {
+  start(promise) {
     const startTime = Date.now();
     const id = ++currentId;
 
     let stoppedTime = 0;
 
-    set({ id, width: retrying ? 100 : 0, flickering: false });
-    if (retrying) {
-      retriesCount += 1;
-      retrying = false;
-    } else retriesCount = 0;
+    set({ id, width: 0, flickering: false });
 
     handleProgress();
 
@@ -68,23 +59,8 @@ export const useProgress = create<Values & Actions>((set, get) => ({
       }
 
       if (stoppedTime) {
-        if (
-          process.env.NODE_ENV !== "development" ||
-          window.location.pathname === pathname
-        ) {
-          set(initValues);
-          return;
-        } else if (Date.now() - stoppedTime > RETRY_DELAY) {
-          if (retriesCount <= MAX_RETRIES) {
-            retrying = true;
-            clientRouter.push(pathname);
-            return;
-          } else {
-            const error = `Failed to change route from ${window.location.pathname} to ${pathname}. Please try again.`;
-            set({ ...initValues, error });
-            throw new Error(error);
-          }
-        }
+        set(initValues);
+        return;
       }
 
       if (duration < RISING_TIME) {
