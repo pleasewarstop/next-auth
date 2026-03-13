@@ -9,7 +9,7 @@ export const clientRouter = {} as any;
 
 export interface Props {}
 export function ProgressBar({}: Props) {
-  const { width, ending, error } = useProgress();
+  const { width, flickering, error } = useProgress();
   const router = useRouter();
   useEffect(() => {
     clientRouter.push = router.push;
@@ -21,7 +21,9 @@ export function ProgressBar({}: Props) {
         className={s.container}
         style={{
           width: `${width}%`,
-          animation: ending ? `${s.ending} 2.5s infinite linear` : undefined,
+          animation: flickering
+            ? `${s.flickering} 2.5s infinite linear`
+            : undefined,
         }}
       />
       <span className={s.error}>{error}</span>

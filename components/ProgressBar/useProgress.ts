@@ -1,8 +1,8 @@
 import { clientRouter } from "@/components/ProgressBar";
 import { create } from "zustand";
 
-const START_WIDTH = 5;
-const START_TIME = 270;
+const GUARANTEED_WIDTH = 5;
+const GUARANTEED_TIME = 270;
 const RISING_TIME = 2700;
 const RETRY_DELAY = 5000;
 const MAX_RETRIES = 7;
@@ -14,14 +14,14 @@ let retrying = false;
 interface Values {
   id: number;
   width: number;
-  ending: boolean;
+  flickering: boolean;
   error: string | null;
 }
 
 const initValues: Values = {
   id: currentId,
   width: 0,
-  ending: false,
+  flickering: false,
   error: null,
 };
 
@@ -33,26 +33,27 @@ export const useProgress = create<Values & Actions>((set, get) => ({
   ...initValues,
 
   start(promise, pathname) {
-    const time = Date.now();
+    const startTime = Date.now();
     const id = ++currentId;
 
     let stoppedTime = 0;
 
-    set({ id, width: retrying ? 100 : 0, ending: false });
+    set({ id, width: retrying ? 100 : 0, flickering: false });
     if (retrying) {
       retriesCount += 1;
       retrying = false;
     } else retriesCount = 0;
 
-    applyProgress();
+    handleProgress();
 
-    function applyProgress() {
+    function handleProgress() {
       if (get().id !== id) return;
 
-      const diff = Date.now() - time;
-      if (diff < START_TIME) {
-        set({ width: (START_WIDTH * diff) / START_TIME });
-        requestAnimationFrame(applyProgress);
+      const duration = Date.now() - startTime;
+
+      if (duration < GUARANTEED_TIME) {
+        set({ width: (GUARANTEED_WIDTH * duration) / GUARANTEED_TIME });
+        requestAnimationFrame(handleProgress);
         return;
       }
 
@@ -73,15 +74,16 @@ export const useProgress = create<Values & Actions>((set, get) => ({
         }
       }
 
-      if (diff < RISING_TIME) {
+      if (duration < RISING_TIME) {
         set({
           width:
-            START_WIDTH +
-            ((diff - START_TIME) / (RISING_TIME - START_TIME)) * 100,
+            GUARANTEED_WIDTH +
+            ((duration - GUARANTEED_TIME) / (RISING_TIME - GUARANTEED_TIME)) *
+              100,
         });
-      } else if (!get().ending) set({ width: 100, ending: true });
+      } else if (!get().flickering) set({ width: 100, flickering: true });
 
-      requestAnimationFrame(applyProgress);
+      requestAnimationFrame(handleProgress);
     }
 
     promise.finally(() => {
