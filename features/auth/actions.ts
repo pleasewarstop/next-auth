@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { parseString } from "set-cookie-parser";
 import { apiServer } from "@/api/server";
 import { TLoginData } from "@/api/types";
-import { loginErrorMsg, loginErrText } from "@/api/errorMsg";
+import { loginErrorMsg, defaultErrorMsg } from "@/api/errorMsg";
 
 const tokenKey = "accessToken";
 const refreshTokenKey = "refreshToken";
@@ -15,7 +15,7 @@ export async function login(data: TLoginData) {
     const res = await apiServer.login(data);
     await setTokens(res);
   } catch (e: any) {
-    const msg = loginErrorMsg(e) ?? loginErrText;
+    const msg = loginErrorMsg(e) ?? defaultErrorMsg;
     throw new Error(msg);
   }
 }

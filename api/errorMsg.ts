@@ -1,9 +1,9 @@
-const errorMsg = (e: any, placeholder: string) =>
+export const defaultErrorMsg = "Server error. Try again please.";
+
+export const errorMsg = (e: any, placeholder: string = defaultErrorMsg) =>
   e === null ? null : ((e?.response?.data?.message || placeholder) as string);
 
-export const loginErrText = "Server error. Try again please.";
-
-export const loginErrorMsg = (e: any) => errorMsg(e, loginErrText);
+export const loginErrorMsg = (e: any) => errorMsg(e);
 
 export const productsErrorMsg = (e: any) =>
   errorMsg(e, "Failed to load products");

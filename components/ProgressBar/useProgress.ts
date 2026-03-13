@@ -1,9 +1,10 @@
+import { defaultErrorMsg, errorMsg } from "@/api/errorMsg";
 import { create } from "zustand";
 
-const DELAY_TIME = 500;
 const GUARANTEED_WIDTH = 5;
-const GUARANTEED_TIME = 770;
-const RISING_TIME = 3200;
+const DELAY_MS = 500;
+const GUARANTEED_MS = 770;
+const RISING_MS = 3200;
 
 let currentId = 0;
 
@@ -36,41 +37,44 @@ export const useProgress = create<Values & Actions>((set, get) => ({
 
     set({ id, width: 0, flickering: false });
 
-    handleProgress();
-
     setTimeout(() => {
       if (!stopped) handleProgress();
-    }, DELAY_TIME);
+    }, DELAY_MS);
 
     function handleProgress() {
       if (get().id !== id) return;
 
       const duration = Date.now() - startTime;
 
-      if (duration < GUARANTEED_TIME) {
+      if (duration < GUARANTEED_MS) {
         set({
           width:
             GUARANTEED_WIDTH *
-            ((duration - DELAY_TIME) / (GUARANTEED_TIME - DELAY_TIME)),
+            ((duration - DELAY_MS) / (GUARANTEED_MS - DELAY_MS)),
         });
         requestAnimationFrame(handleProgress);
-      } else if (duration < RISING_TIME) {
+      } else if (duration < RISING_MS) {
         set({
           width:
             GUARANTEED_WIDTH +
-            ((duration - GUARANTEED_TIME) / (RISING_TIME - GUARANTEED_TIME)) *
-              100,
+            ((duration - GUARANTEED_MS) / (RISING_MS - GUARANTEED_MS)) * 100,
         });
         if (!stopped) requestAnimationFrame(handleProgress);
-      } else if (!get().flickering) {
+      } else {
         set({ width: 100, flickering: true });
       }
     }
 
-    promise.finally(() => {
-      stopped = true;
-      if (get().id === id) set(initValues);
-    });
+    promise
+      .catch((e) => {
+        if (get().id === id) {
+          set({ error: errorMsg(e) || defaultErrorMsg });
+        }
+      })
+      .finally(() => {
+        stopped = true;
+        if (get().id === id) set(initValues);
+      });
   },
 }));
 
