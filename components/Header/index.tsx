@@ -38,9 +38,11 @@ export function Header({}: Props) {
             <Image width={38} height={38} src="/img/stones.png" alt="logo" />
             Abelohost Shop
           </Link>
-          <Link href={routes.login()} className={s.login}>
-            Login
-          </Link>
+          {!(me || pathname === routes.login()) && (
+            <Link href={routes.login()} className={s.login}>
+              Login
+            </Link>
+          )}
         </div>
         <div className={s.right}>
           <LoadingError className={s.error} error={error} onRetry={refetch} />
