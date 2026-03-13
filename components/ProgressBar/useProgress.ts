@@ -32,21 +32,20 @@ export const useProgress = create<Values & Actions>((set, get) => ({
     const startTime = Date.now();
     const id = ++currentId;
 
-    let stoppedTime = 0;
+    let stopped = false;
 
     set({ id, width: 0, flickering: false });
 
     handleProgress();
 
+    setTimeout(() => {
+      if (!stopped) handleProgress();
+    }, DELAY_TIME);
+
     function handleProgress() {
       if (get().id !== id) return;
 
       const duration = Date.now() - startTime;
-
-      if (duration < DELAY_TIME) {
-        if (!stoppedTime) requestAnimationFrame(handleProgress);
-        return;
-      }
 
       if (duration < GUARANTEED_TIME) {
         set({
@@ -55,28 +54,22 @@ export const useProgress = create<Values & Actions>((set, get) => ({
             ((duration - DELAY_TIME) / (GUARANTEED_TIME - DELAY_TIME)),
         });
         requestAnimationFrame(handleProgress);
-        return;
-      }
-
-      if (stoppedTime) {
-        set(initValues);
-        return;
-      }
-
-      if (duration < RISING_TIME) {
+      } else if (duration < RISING_TIME) {
         set({
           width:
             GUARANTEED_WIDTH +
             ((duration - GUARANTEED_TIME) / (RISING_TIME - GUARANTEED_TIME)) *
               100,
         });
-      } else if (!get().flickering) set({ width: 100, flickering: true });
-
-      requestAnimationFrame(handleProgress);
+        if (!stopped) requestAnimationFrame(handleProgress);
+      } else if (!get().flickering) {
+        set({ width: 100, flickering: true });
+      }
     }
 
     promise.finally(() => {
-      stoppedTime = Date.now();
+      stopped = true;
+      set(initValues);
     });
   },
 }));
