@@ -1,9 +1,10 @@
 import { clientRouter } from "@/components/ProgressBar";
 import { create } from "zustand";
 
+const DELAY_TIME = 500;
 const GUARANTEED_WIDTH = 5;
-const GUARANTEED_TIME = 270;
-const RISING_TIME = 2700;
+const GUARANTEED_TIME = 770;
+const RISING_TIME = 3200;
 const RETRY_DELAY = 3000;
 const MAX_RETRIES = 7;
 
@@ -51,8 +52,17 @@ export const useProgress = create<Values & Actions>((set, get) => ({
 
       const duration = Date.now() - startTime;
 
+      if (duration < DELAY_TIME) {
+        if (!stoppedTime) requestAnimationFrame(handleProgress);
+        return;
+      }
+
       if (duration < GUARANTEED_TIME) {
-        set({ width: (GUARANTEED_WIDTH * duration) / GUARANTEED_TIME });
+        set({
+          width:
+            GUARANTEED_WIDTH *
+            ((duration - DELAY_TIME) / (GUARANTEED_TIME - DELAY_TIME)),
+        });
         requestAnimationFrame(handleProgress);
         return;
       }
