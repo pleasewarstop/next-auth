@@ -11,9 +11,9 @@ export type SSRStore<D = any, T = any> = (
   arg: SSRStoreArg<D>
 ) => StoreInstance<T>;
 
-export type RestorableSSRStore<D = any, V = any, A = any> = SSRStore<
+export type RestorableSSRStore<D = any, V = any, A = any, C = V> = SSRStore<
   D,
-  V & A & { restore: (cache: V) => void }
+  V & A & { restore: (cache: C) => void }
 >;
 
 export type InitDataItem = {

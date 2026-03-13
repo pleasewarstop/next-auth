@@ -9,6 +9,7 @@ interface Actions {}
 
 export const yearStore = ssrStore<number, Values & Actions>(
   "year",
+
   ({ data }) =>
     create(() => ({
       year: data || 0,

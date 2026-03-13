@@ -22,6 +22,7 @@ interface Actions {
 
 export const meStore = ssrStore<TUser, Values & Actions>(
   "me",
+
   ({ data, error }) =>
     create((set) => ({
       ...initValues,

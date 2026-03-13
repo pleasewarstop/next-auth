@@ -3,7 +3,7 @@ import { CanceledError } from "axios";
 import { api } from "@/api/client";
 import { productsErrorMsg } from "@/api/errorMsg";
 import { TProductsResponse } from "@/api/types";
-import { sessionSsrStore } from "@/components/StoresProvider/sessionSsrStore";
+import { sessionStore } from "@/components/StoresProvider/sessionStore";
 
 const PER_PAGE = 12;
 
@@ -29,17 +29,17 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = sessionSsrStore<ProductsData, Values, Actions>(
+export const productsStore = sessionStore<ProductsData, Values, Actions>(
   "products",
 
-  ({ data, error }) =>
+  ({ data, error: dError }) =>
     create((set, get) => ({
       ...initValues,
       ...data,
-      error,
+      error: dError,
 
       restore: (cache) => {
-        if (error) return;
+        if (dError) return;
 
         const isProductsChanged = data?.products?.some(
           ({ id }, i) => cache.products[i].id !== id
@@ -48,22 +48,24 @@ export const productsStore = sessionSsrStore<ProductsData, Values, Actions>(
       },
 
       fetchNextIfNeeded: async () => {
-        const skip = get().products.length;
-        if (get().loading || (skip !== 0 && skip >= get().total)) return;
+        const { products, loading, total } = get();
+
+        const skip = products.length;
+        if (loading || (skip !== 0 && skip >= total)) return;
 
         set({ loading: true, error: null, retrying: Boolean(get().error) });
 
         try {
           abortController = new AbortController();
 
-          const { products, total } = await api.products({
+          const { products: resProducts, total } = await api.products({
             skip,
             limit: PER_PAGE,
             signal: abortController.signal,
           });
 
           set({
-            products: [...get().products, ...products],
+            products: [...get().products, ...resProducts],
             total,
             loading: false,
             retrying: false,

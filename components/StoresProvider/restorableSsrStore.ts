@@ -12,14 +12,15 @@ export function restorableSsrStore<
   D,
   V,
   A,
-  S extends RestorableSSRStore<D, V, A> = RestorableSSRStore<D, V, A>,
+  C,
+  S extends RestorableSSRStore<D, V, A, C> = RestorableSSRStore<D, V, A, C>,
 >(
   name: string,
   store: S,
-  getCache: () => V,
+  getCache: () => C,
   subscribe: (value: V & A) => void
 ) {
-  const wrappedStore: RestorableSSRStore<D, V, A> = (arg) => {
+  const wrappedStore: RestorableSSRStore<D, V, A, C> = (arg) => {
     const storeInstance = store(arg);
     if (typeof window === "undefined") return storeInstance;
 
