@@ -16,7 +16,7 @@ import {
   useRef,
 } from "react";
 
-const unloadedKey = "unloaded";
+let hydrated = false;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: SSRStore) => ({}) as StoreInstance;
@@ -59,9 +59,9 @@ export function StoresProvider({ initData, children }: Props) {
       usedInitDataByStoreRef.current[name] = storeInitData;
       storesInstancesRef.current[name] = store(storeInitData);
 
-      const cache = getStoreCache(name);
-      if (cache && !(unloadedKey in sessionStorage)) {
-        storesInstancesRef.current[name].getState().restore(cache);
+      if (hydrated) {
+        const cache = getStoreCache(name);
+        if (cache) storesInstancesRef.current[name].getState().restore(cache);
       }
 
       return storesInstancesRef.current[name];
@@ -70,22 +70,14 @@ export function StoresProvider({ initData, children }: Props) {
   );
 
   useEffect(() => {
-    if (unloadedKey in sessionStorage) {
-      sessionStorage.removeItem(unloadedKey);
-      window.history.scrollRestoration = "auto";
+    if (!hydrated) {
+      hydrated = true;
 
       for (const name in storesInstancesRef.current) {
         const cache = getStoreCache(name);
         if (cache) storesInstancesRef.current[name].getState().restore(cache);
       }
     }
-
-    function onBeforeUnload() {
-      window.sessionStorage.setItem(unloadedKey, "");
-      window.history.scrollRestoration = "manual";
-    }
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
 
   return (
