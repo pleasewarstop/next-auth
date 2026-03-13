@@ -1,5 +1,5 @@
-import { RestorableStore } from "@/components/StoresProvider/types";
-import { store as storeBase } from "./store";
+import { RestorableSSRStore } from "@/components/StoresProvider/types";
+import { ssrStore } from "./ssrStore";
 
 const cacheGetters: Record<string, any> = {};
 
@@ -8,18 +8,18 @@ export const getStoreCache = (name: string) =>
     ? null
     : cacheGetters[name]();
 
-export function restorableStore<
+export function restorableSsrStore<
   D,
   V,
   A,
-  S extends RestorableStore<D, V, A> = RestorableStore<D, V, A>,
+  S extends RestorableSSRStore<D, V, A> = RestorableSSRStore<D, V, A>,
 >(
   name: string,
   store: S,
   getCache: () => V,
   subscribe: (value: V & A) => void
 ) {
-  const wrappedStore: RestorableStore<D, V, A> = (arg) => {
+  const wrappedStore: RestorableSSRStore<D, V, A> = (arg) => {
     const storeInstance = store(arg);
     if (typeof window === "undefined") return storeInstance;
 
@@ -29,5 +29,5 @@ export function restorableStore<
     return storeInstance;
   };
 
-  return storeBase<D, V & A>(name, wrappedStore);
+  return ssrStore<D, V & A>(name, wrappedStore);
 }

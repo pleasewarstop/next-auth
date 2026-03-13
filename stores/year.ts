@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { store } from "@/components/StoresProvider/store";
+import { ssrStore } from "@/components/StoresProvider/ssrStore";
 
 interface Values {
   year: number;
@@ -7,8 +7,10 @@ interface Values {
 
 interface Actions {}
 
-export const yearStore = store<number, Values & Actions>("year", ({ data }) =>
-  create(() => ({
-    year: data || 0,
-  }))
+export const yearStore = ssrStore<number, Values & Actions>(
+  "year",
+  ({ data }) =>
+    create(() => ({
+      year: data || 0,
+    }))
 );

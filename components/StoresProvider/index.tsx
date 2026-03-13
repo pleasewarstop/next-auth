@@ -1,10 +1,10 @@
 "use client";
 
-import { getStoreCache } from "@/components/StoresProvider/restorableStore";
-import { getStoreName } from "@/components/StoresProvider/store";
+import { getStoreCache } from "@/components/StoresProvider/restorableSsrStore";
+import { getStoreName } from "@/components/StoresProvider/ssrStore";
 import {
   InitDataItem,
-  Store,
+  SSRStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
 import {
@@ -19,7 +19,7 @@ import {
 const unloadedKey = "unloaded";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const initCtx = (store: Store) => ({}) as StoreInstance;
+const initCtx = (store: SSRStore) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
 
 interface Props {
@@ -44,7 +44,7 @@ export function StoresProvider({ initData, children }: Props) {
   >({});
 
   const resolveStore = useCallback(
-    function resolveStore<T extends Store>(store: T) {
+    function resolveStore<T extends SSRStore>(store: T) {
       const name = getStoreName(store);
       const storeInitData = initDataByStore?.[name];
 

@@ -11,7 +11,7 @@ import s from "./styles.module.scss";
 interface Props {
   products: TProduct[];
   loading: boolean;
-  error?: string | null;
+  error: string | null;
   onFetchNext: () => void;
 }
 export function ProductsList({ products, loading, error, onFetchNext }: Props) {

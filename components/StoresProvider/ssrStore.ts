@@ -1,8 +1,8 @@
-import { Store } from "@/components/StoresProvider/types";
+import { SSRStore } from "@/components/StoresProvider/types";
 
-const storesNames: Map<Store, string> = new Map();
+const storesNames: Map<SSRStore, string> = new Map();
 
-export const getStoreName = (store: Store) => {
+export const getStoreName = (store: SSRStore) => {
   const name = storesNames.get(store);
   if (!name) {
     throw new Error(
@@ -12,7 +12,7 @@ export const getStoreName = (store: Store) => {
   return name;
 };
 
-export function store<D, T, S extends Store<D, T> = Store<D, T>>(
+export function ssrStore<D, T, S extends SSRStore<D, T> = SSRStore<D, T>>(
   name: string,
   store: S
 ) {

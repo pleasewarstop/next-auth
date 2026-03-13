@@ -3,7 +3,7 @@ import { CanceledError } from "axios";
 import { api } from "@/api/client";
 import { productsErrorMsg } from "@/api/errorMsg";
 import { TProductsResponse } from "@/api/types";
-import { sessionStore } from "@/components/StoresProvider/sessionStore";
+import { sessionSsrStore } from "@/components/StoresProvider/sessionSsrStore";
 
 const PER_PAGE = 12;
 
@@ -11,7 +11,7 @@ type ProductsData = Pick<TProductsResponse, "products" | "total">;
 
 interface Values extends ProductsData {
   loading: boolean;
-  error: string | null | undefined;
+  error: string | null;
   retrying: boolean;
 }
 const initValues: Values = {
@@ -29,7 +29,7 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = sessionStore<ProductsData, Values, Actions>(
+export const productsStore = sessionSsrStore<ProductsData, Values, Actions>(
   "products",
 
   ({ data, error }) =>

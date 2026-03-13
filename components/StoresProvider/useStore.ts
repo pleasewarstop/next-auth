@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import { storesContext } from "@/components/StoresProvider";
-import { Store, InferStoreInstance } from "@/components/StoresProvider/types";
+import { SSRStore } from "@/components/StoresProvider/types";
 
-export function useStore<S extends Store>(store: S) {
+export function useStore<S extends SSRStore>(store: S) {
   const resolveStore = useContext(storesContext);
 
-  return resolveStore(store) as InferStoreInstance<S>;
+  return resolveStore(store) as ReturnType<S>;
 }
