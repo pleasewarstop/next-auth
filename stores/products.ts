@@ -35,21 +35,13 @@ export const productsStore = ssrStore<ProductsData, State>()(
         error,
       };
     } else if (data) {
-      const { products, total } = state;
-
       const isProductsChanged = data.products.some(
-        ({ id }, i) => products[i]?.id !== id
+        ({ id }, i) => state.products[i]?.id !== id
       );
       if (isProductsChanged) {
         return {
           ...data,
           error,
-        };
-      } else if (data.total > total) {
-        return {
-          products:
-            products.length > total ? products.slice(0, total) : products,
-          total: total,
         };
       }
     }
