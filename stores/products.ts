@@ -34,7 +34,6 @@ export const productsStore = ssrStore<ProductsData, Values & Actions>(
   ({ state, data, error }) => {
     if (!state || error) {
       return {
-        ...initValues,
         ...data,
         error,
       };

@@ -23,7 +23,7 @@ export const meStore = ssrStore<TUser, Values & Actions>(
   "me",
 
   ({ data, error }) => ({
-    year: data,
+    me: data,
     error,
   }),
 
