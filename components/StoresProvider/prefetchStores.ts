@@ -1,8 +1,8 @@
 import { getStoreName } from "@/components/StoresProvider/ssrStore";
-import { PrefetchArg, SSRStore } from "@/components/StoresProvider/types";
+import { PrefetchArg, SsrStore } from "@/components/StoresProvider/types";
 import { isPromise } from "@/util/isPromise";
 
-export async function prefetchStores<S extends SSRStore[]>(
+export async function prefetchStores<S extends SsrStore[]>(
   ...args: [...{ [K in keyof S]: PrefetchArg<S[K]> }]
 ) {
   const promises = args.map((arg) => {

@@ -9,9 +9,9 @@ import { logout } from "@/features/auth/actions";
 import { PageRow } from "@/components/Page/Row";
 import { LoadingError } from "@/components/LoadingError";
 import { useStore } from "@/components/StoresProvider/useStore";
-import s from "./styles.module.scss";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Spinner } from "@/components/Spinner";
+import s from "./styles.module.scss";
 
 interface Props {}
 export function Header({}: Props) {

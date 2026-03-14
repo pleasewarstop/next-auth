@@ -1,14 +1,14 @@
 import {
-  GetSSRDiff,
-  SSRStore,
+  GetSsrDiff,
+  SsrStore,
   StoreCreator,
 } from "@/components/StoresProvider/types";
 
-const storesNames: Map<SSRStore, string> = new Map();
+const storesNames: Map<SsrStore, string> = new Map();
 
 export function ssrStore<D, V, A>(
   name: string,
-  getSsrDiff: GetSSRDiff<D, V & A>,
+  getSsrDiff: GetSsrDiff<D, V & A>,
   creator: StoreCreator<V, A>
 ) {
   for (const storeName of storesNames.values()) {
@@ -28,7 +28,7 @@ export function ssrStore<D, V, A>(
   return store;
 }
 
-export const getStoreName = (store: SSRStore) => {
+export const getStoreName = (store: SsrStore) => {
   const name = storesNames.get(store);
   if (!name) {
     throw new Error(

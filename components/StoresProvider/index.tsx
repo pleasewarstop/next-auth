@@ -2,8 +2,8 @@
 
 import { getStoreName } from "@/components/StoresProvider/ssrStore";
 import {
-  ServerDataItem,
-  SSRStore,
+  SsrDataItem,
+  SsrStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
 import { filterFunctions } from "@/util/filterFunctions";
@@ -11,42 +11,42 @@ import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
 import { create } from "zustand";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const initCtx = (store: SSRStore) => ({}) as StoreInstance;
+const initCtx = (store: SsrStore) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
 const storesInstances: Record<string, StoreInstance> = {};
 
 interface Props {
-  serverData?: ServerDataItem[];
+  ssrData?: SsrDataItem[];
   children: ReactNode;
 }
-export function StoresProvider({ serverData, children }: Props) {
-  const serverDataByStore = useMemo(
+export function StoresProvider({ ssrData, children }: Props) {
+  const ssrDataByStore = useMemo(
     () =>
-      serverData?.reduce(
+      ssrData?.reduce(
         (acc, { storeName, ...rest }) => {
           acc[storeName] = rest;
           return acc;
         },
-        {} as Record<string, Omit<ServerDataItem, "storeName">>
+        {} as Record<string, Omit<SsrDataItem, "storeName">>
       ),
-    [serverData]
+    [ssrData]
   );
-  const usedServerDataByStoreRef = useRef<
-    Record<string, Omit<ServerDataItem, "storeName">>
+  const usedSsrDataByStoreRef = useRef<
+    Record<string, Omit<SsrDataItem, "storeName">>
   >({});
 
   const resolveStore = useCallback(
-    function <S extends SSRStore>(store: S) {
+    function <S extends SsrStore>(store: S) {
       const name = getStoreName(store);
-      const storeServerData = serverDataByStore?.[name];
+      const storeSsrData = ssrDataByStore?.[name];
 
-      if (!storeServerData) {
+      if (!storeSsrData) {
         throw new Error(
-          `StoreProvider have not serverData for ssrStore "${name}"`
+          `StoreProvider have not ssrData for ssrStore "${name}"`
         );
       }
 
-      if (usedServerDataByStoreRef.current[name] === storeServerData) {
+      if (usedSsrDataByStoreRef.current[name] === storeSsrData) {
         return storesInstances[name];
       }
 
@@ -54,16 +54,16 @@ export function StoresProvider({ serverData, children }: Props) {
       const ssrDiff =
         store.getSsrDiff({
           state,
-          ...storeServerData,
+          ...storeSsrData,
         }) || filterFunctions(state || {});
 
       storesInstances[name] = create(store.creator(ssrDiff));
 
-      usedServerDataByStoreRef.current[name] = storeServerData;
+      usedSsrDataByStoreRef.current[name] = storeSsrData;
 
       return storesInstances[name];
     },
-    [serverDataByStore]
+    [ssrDataByStore]
   );
 
   return (

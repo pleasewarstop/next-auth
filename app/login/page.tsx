@@ -9,7 +9,7 @@ import { yearStore } from "@/stores/year";
 import s from "./styles.module.scss";
 
 export default async function Home() {
-  const serverData = await prefetchStores(
+  const ssrData = await prefetchStores(
     {
       store: meStore,
       data: apiServer.me(),
@@ -21,7 +21,7 @@ export default async function Home() {
     }
   );
   return (
-    <StoresProvider serverData={serverData}>
+    <StoresProvider ssrData={ssrData}>
       <Page contentClassName={s.content}>
         <h1 className={s.title}>Login</h1>
         <LoginForm />

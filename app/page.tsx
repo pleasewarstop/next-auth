@@ -8,7 +8,7 @@ import { yearStore } from "@/stores/year";
 import { meStore } from "@/stores/me";
 
 export default async function Home() {
-  const serverData = await prefetchStores(
+  const ssrData = await prefetchStores(
     {
       store: meStore,
       data: apiServer.me(),
@@ -28,7 +28,7 @@ export default async function Home() {
   );
 
   return (
-    <StoresProvider serverData={serverData}>
+    <StoresProvider ssrData={ssrData}>
       <HomeClient />
     </StoresProvider>
   );
