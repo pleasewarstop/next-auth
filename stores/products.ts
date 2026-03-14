@@ -28,7 +28,7 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = ssrStore<ProductsData, Values, Actions>(
+export const productsStore = ssrStore<ProductsData, Values & Actions>(
   "products",
 
   ({ state, data, error }) => {

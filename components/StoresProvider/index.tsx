@@ -6,7 +6,6 @@ import {
   SsrStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
-import { filterFunctions } from "@/util/filterFunctions";
 import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
 import { create } from "zustand";
 
@@ -20,17 +19,15 @@ interface Props {
   children: ReactNode;
 }
 export function StoresProvider({ ssrData, children }: Props) {
-  const ssrDataByStore = useMemo(
-    () =>
-      ssrData?.reduce(
-        (acc, { storeName, ...rest }) => {
-          acc[storeName] = rest;
-          return acc;
-        },
-        {} as Record<string, Omit<SsrDataItem, "storeName">>
-      ),
-    [ssrData]
-  );
+  const ssrDataByStore = useMemo(() => {
+    return ssrData?.reduce(
+      (acc, { storeName, ...rest }) => {
+        acc[storeName] = rest;
+        return acc;
+      },
+      {} as Record<string, Omit<SsrDataItem, "storeName">>
+    );
+  }, [ssrData]);
   const usedSsrDataByStoreRef = useRef<
     Record<string, Omit<SsrDataItem, "storeName">>
   >({});
@@ -46,20 +43,21 @@ export function StoresProvider({ ssrData, children }: Props) {
         );
       }
 
+      const existedInstance = storesInstances[name];
+
       if (usedSsrDataByStoreRef.current[name] === storeSsrData) {
         return storesInstances[name];
       }
+      usedSsrDataByStoreRef.current[name] = storeSsrData;
 
-      const state = storesInstances[name]?.getState() || null;
+      const state = existedInstance?.getState() || null;
       const ssrDiff =
         store.getSsrDiff({
           state,
           ...storeSsrData,
-        }) || filterFunctions(state || {});
+        }) || state;
 
       storesInstances[name] = create(store.creator(ssrDiff));
-
-      usedSsrDataByStoreRef.current[name] = storeSsrData;
 
       return storesInstances[name];
     },

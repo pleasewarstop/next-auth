@@ -6,10 +6,10 @@ import {
 
 const storesNames: Map<SsrStore, string> = new Map();
 
-export function ssrStore<D, V, A>(
+export function ssrStore<D, T>(
   name: string,
-  getSsrDiff: GetSsrDiff<D, V & A>,
-  creator: StoreCreator<V, A>
+  getSsrDiff: GetSsrDiff<D, T>,
+  creator: StoreCreator<T>
 ) {
   for (const storeName of storesNames.values()) {
     if (name === storeName) {

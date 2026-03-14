@@ -1,23 +1,10 @@
 import { StoreApi, UseBoundStore } from "zustand";
 
-export type SsrData<D = any> = {
-  data: D | null;
-  error: string | null;
-};
-
-type GetSsrDiffArg<D = any, T = any> = SsrData<D> & {
-  state: T | null;
-};
-
-export type GetSsrDiff<D = any, T = any> = (
-  arg: GetSsrDiffArg<D, T>
-) => Partial<T> | void;
-
 export type StoreInstance<T = any> = UseBoundStore<StoreApi<T>>;
 
-export type StoreCreator<V = any, A = any, SD = Partial<V> | null> = (
+export type StoreCreator<T = any, SD = Partial<T> | null> = (
   ssrDiff: SD
-) => (set: (state: Partial<V & A>) => void, get: () => V & A) => V & A;
+) => (set: (state: Partial<T>) => void, get: () => T) => T;
 
 export type SsrStore<
   D = any,
@@ -32,6 +19,17 @@ export type SsrStore<
 export type SsrDataItem = SsrData & {
   storeName: any;
 };
+
+export type SsrData<D = any> = {
+  data: D | null;
+  error: string | null;
+};
+
+export type GetSsrDiff<D = any, T = any> = (
+  arg: SsrData<D> & {
+    state: T | null;
+  }
+) => Partial<T> | null | void;
 
 export type PrefetchArg<T extends SsrStore> = {
   store: T;
