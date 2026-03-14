@@ -2,11 +2,11 @@
 
 import { getStoreName } from "@/components/StoresProvider/ssrStore";
 import {
-  SsrDataItem,
+  SsrData,
   SsrStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
-import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
+import { createContext, ReactNode, useCallback, useRef } from "react";
 import { create } from "zustand";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,27 +15,16 @@ export const storesContext = createContext(initCtx);
 const storesInstances: Record<string, StoreInstance> = {};
 
 interface Props {
-  ssrData?: SsrDataItem[];
+  ssrData?: Record<string, SsrData>;
   children: ReactNode;
 }
 export function StoresProvider({ ssrData, children }: Props) {
-  const ssrDataByStore = useMemo(() => {
-    return ssrData?.reduce(
-      (acc, { storeName, ...rest }) => {
-        acc[storeName] = rest;
-        return acc;
-      },
-      {} as Record<string, Omit<SsrDataItem, "storeName">>
-    );
-  }, [ssrData]);
-  const usedSsrDataByStoreRef = useRef<
-    Record<string, Omit<SsrDataItem, "storeName">>
-  >({});
+  const usedSsrDataRef = useRef<Record<string, Omit<SsrData, "storeName">>>({});
 
   const resolveStore = useCallback(
     function <S extends SsrStore>(store: S) {
       const name = getStoreName(store);
-      const storeSsrData = ssrDataByStore?.[name];
+      const storeSsrData = ssrData?.[name];
 
       if (!storeSsrData) {
         throw new Error(
@@ -45,16 +34,17 @@ export function StoresProvider({ ssrData, children }: Props) {
 
       const existedInstance = storesInstances[name];
 
-      if (usedSsrDataByStoreRef.current[name] === storeSsrData) {
+      if (usedSsrDataRef.current[name] === storeSsrData) {
         return storesInstances[name];
       }
-      usedSsrDataByStoreRef.current[name] = storeSsrData;
+      usedSsrDataRef.current[name] = storeSsrData;
 
       const state = existedInstance?.getState() || null;
-      const ssrDiff = store.getSsrDiff({
-        state,
-        ...storeSsrData,
-      });
+      const ssrDiff =
+        store.getSsrDiff({
+          state,
+          ...storeSsrData,
+        }) || null;
 
       if (!existedInstance || ssrDiff) {
         storesInstances[name] = create(store.creator(ssrDiff));
@@ -62,7 +52,7 @@ export function StoresProvider({ ssrData, children }: Props) {
 
       return storesInstances[name];
     },
-    [ssrDataByStore]
+    [ssrData]
   );
 
   return (

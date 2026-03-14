@@ -3,41 +3,56 @@ import { PrefetchArg } from "@/components/StoresProvider/types";
 import { isPromise } from "@/util/isPromise";
 
 export async function prefetchStores<P extends PrefetchArg<any>[]>(...args: P) {
+  const usedNames: Record<string, true> = {};
+
   const promises = args.map((arg) => {
     const { store, data, error } = arg;
-    const storeName = getStoreName(store);
+    const name = getStoreName(store);
+
+    if (usedNames[name]) {
+      throw new Error(`Duplicate preloading for store "${name}"`);
+    }
+    usedNames[name] = true;
 
     return isPromise(data)
       ? data
-          .then((data) => ({ storeName, data }))
+          .then((data) => ({ name, data }))
           .catch((e) => {
             throw {
-              storeName,
+              name,
               error: error ? error(e) : e,
             };
           })
-      : { storeName, data };
+      : { name, data };
   });
 
   const results = await Promise.allSettled(promises);
 
-  return results.map((result) =>
-    result.status === "fulfilled"
-      ? {
-          storeName: result.value.storeName,
-          data: result.value.data,
-          error: null,
-        }
-      : {
-          storeName: result.reason.storeName as string,
-          data: null,
-          error: result.reason.error,
-        }
-  ) as {
-    storeName: string;
-    data: DataUnion<P> | null;
-    error: any;
-  }[];
+  return Object.fromEntries(
+    results.map((result) =>
+      result.status === "fulfilled"
+        ? [
+            result.value.name,
+            {
+              data: result.value.data,
+              error: null,
+            },
+          ]
+        : [
+            result.reason.name as string,
+            {
+              data: null,
+              error: result.reason.error,
+            },
+          ]
+    )
+  ) as Record<
+    string,
+    {
+      data: DataUnion<P> | null;
+      error: any;
+    }
+  >;
 }
 
 type DataUnion<P extends PrefetchArg<any>[]> = Awaited<P[number]["data"]>;

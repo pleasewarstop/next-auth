@@ -2,8 +2,8 @@ import { StoreApi, UseBoundStore } from "zustand";
 
 export type StoreInstance<T = any> = UseBoundStore<StoreApi<T>>;
 
-export type StoreCreator<T = any, SD = Partial<T> | null> = (
-  ssrDiff: SD
+export type StoreCreator<T = any, SD = Partial<T>> = (
+  ssrDiff: SD | null
 ) => (set: (state: Partial<T>) => void, get: () => T) => T;
 
 export type SsrStore<
@@ -14,10 +14,6 @@ export type SsrStore<
   name: string;
   getSsrDiff: GSD;
   creator: InferStoreCreatorFromGetSsrDiff<T, GSD>;
-};
-
-export type SsrDataItem = SsrData & {
-  storeName: any;
 };
 
 export type SsrData<D = any> = {
@@ -48,4 +44,7 @@ export type InferStoreCreatorFromGetSsrDiff<
   GSD extends GetSsrDiff,
 > = StoreCreator<T, InferSsrDiffFromGetter<GSD>>;
 
-export type InferSsrDiffFromGetter<GSD extends GetSsrDiff> = ReturnType<GSD>;
+type InferSsrDiffFromGetter<GSD extends GetSsrDiff> = Exclude<
+  ReturnType<GSD>,
+  void
+>;
