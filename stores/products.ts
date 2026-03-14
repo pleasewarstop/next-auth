@@ -21,13 +21,13 @@ const initValues: Values = {
   error: null,
 };
 
-interface Actions {
+type State = Values & {
   fetchNextIfNeeded: () => Promise<void>;
-}
+};
 
-export const productsStore = ssrStore<ProductsData, Values & Actions>(
-  "products"
-)(
+export const productsStore = ssrStore<ProductsData, State>()(
+  "products",
+
   ({ state, data, error }) => {
     if (!state || error) {
       return {

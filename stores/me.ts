@@ -15,13 +15,13 @@ const initValues: Values = {
   error: null,
 };
 
-interface Actions {
+type State = Values & {
   refetch: () => void;
-}
+};
 
-type Store = Values & Actions;
+export const meStore = ssrStore<TUser, State>()(
+  "me",
 
-export const meStore = ssrStore<TUser, Store>("me")(
   ({ data, error }) => ({
     me: data,
     error,

@@ -6,12 +6,13 @@ import {
 
 const storesNames: Map<SsrStore, string> = new Map();
 
-export function ssrStore<D, T>(name: string) {
+export function ssrStore<D, T>() {
   return function <
+    N extends string = string,
     GSD extends GetSsrDiff<D, T> = GetSsrDiff<D, T>,
     C extends InferStoreCreatorFromGetSsrDiff<T, GSD> =
       InferStoreCreatorFromGetSsrDiff<T, GSD>,
-  >(getSsrDiff: GSD, creator: C) {
+  >(name: N, getSsrDiff: GSD, creator: C) {
     for (const storeName of storesNames.values()) {
       if (name === storeName) {
         throw new Error(

@@ -8,9 +8,11 @@ const initValues: Values = {
   year: 0,
 };
 
-interface Actions {}
+type State = Values & {};
 
-export const yearStore = ssrStore<number, Values & Actions>("year")(
+export const yearStore = ssrStore<number, State>()(
+  "year",
+
   ({ data, error }) => ({
     year: data || 0,
     error,

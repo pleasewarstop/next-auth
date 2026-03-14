@@ -48,3 +48,10 @@ type InferSsrDiffFromGetter<GSD extends GetSsrDiff> = Exclude<
   ReturnType<GSD>,
   void
 >;
+
+export type PrefetchResult<P extends PrefetchArg<any>[]> = {
+  [K in P[number] as K["store"]["name"]]: {
+    data: Awaited<K["data"]> | null;
+    error: any;
+  };
+};

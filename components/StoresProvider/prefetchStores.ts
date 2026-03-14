@@ -1,5 +1,5 @@
 import { getStoreName } from "@/components/StoresProvider/ssrStore";
-import { PrefetchArg } from "@/components/StoresProvider/types";
+import { PrefetchArg, PrefetchResult } from "@/components/StoresProvider/types";
 import { isPromise } from "@/util/isPromise";
 
 export async function prefetchStores<P extends PrefetchArg<any>[]>(...args: P) {
@@ -46,13 +46,5 @@ export async function prefetchStores<P extends PrefetchArg<any>[]>(...args: P) {
             },
           ]
     )
-  ) as Record<
-    string,
-    {
-      data: DataUnion<P> | null;
-      error: any;
-    }
-  >;
+  ) as PrefetchResult<P>;
 }
-
-type DataUnion<P extends PrefetchArg<any>[]> = Awaited<P[number]["data"]>;
