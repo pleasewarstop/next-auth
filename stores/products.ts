@@ -1,9 +1,8 @@
-import { create } from "zustand";
 import { CanceledError } from "axios";
 import { api } from "@/api/client";
 import { productsErrorMsg } from "@/api/errorMsg";
 import { TProductsResponse } from "@/api/types";
-import { sessionStore } from "@/components/StoresProvider/sessionStore";
+import { ssrStore } from "@/components/StoresProvider/ssrStore";
 
 const PER_PAGE = 12;
 
@@ -29,58 +28,75 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = sessionStore<ProductsData, Values, Actions>(
+export const productsStore = ssrStore<ProductsData, Values & Actions>(
   "products",
 
-  ({ data, error }) =>
-    create((set, get) => ({
-      ...initValues,
-      ...data,
-      error,
+  ({ state, data, error }) => {
+    if (!state || error) {
+      return {
+        ...initValues,
+        ...data,
+        error,
+      };
+    } else if (data) {
+      const { products, total } = state;
 
-      restore: (cache) => {
-        if (error) return;
+      const isProductsChanged = data.products.some(
+        ({ id }, i) => products[i]?.id !== id
+      );
+      if (isProductsChanged) {
+        return {
+          ...data,
+          error,
+        };
+      } else if (data.total > total) {
+        return {
+          products:
+            products.length > total ? products.slice(0, total) : products,
+          total: total,
+        };
+      }
+    }
+  },
 
-        const isProductsChanged = data?.products?.some(
-          ({ id }, i) => cache.products[i].id !== id
-        );
-        if (!isProductsChanged) set({ products: cache.products });
-      },
+  (serverDiff) => (set, get) => ({
+    ...initValues,
+    ...serverDiff,
 
-      fetchNextIfNeeded: async () => {
-        const { products, loading, total } = get();
+    fetchNextIfNeeded: async () => {
+      const { products, loading, total } = get();
 
-        const skip = products.length;
-        if (loading || (skip !== 0 && skip >= total)) return;
+      const skip = products.length;
+      if (loading || (skip !== 0 && skip >= total)) return;
 
-        set({ loading: true, error: null, retrying: Boolean(get().error) });
+      set({ loading: true, error: null, retrying: Boolean(get().error) });
 
-        try {
-          abortController = new AbortController();
+      try {
+        abortController = new AbortController();
 
-          const { products: resProducts, total } = await api.products({
-            skip,
-            limit: PER_PAGE,
-            signal: abortController.signal,
-          });
+        const { products: resProducts, total } = await api.products({
+          skip,
+          limit: PER_PAGE,
+          signal: abortController.signal,
+        });
 
-          set({
-            products: [...products, ...resProducts],
-            total,
-            loading: false,
-            retrying: false,
-          });
-        } catch (e: any) {
-          set({
-            loading: false,
-            retrying: false,
-            error: e instanceof CanceledError ? null : productsErrorMsg(e),
-          });
-        }
-      },
+        set({
+          products: [...products, ...resProducts],
+          total,
+          loading: false,
+          retrying: false,
+        });
+      } catch (e: any) {
+        set({
+          loading: false,
+          retrying: false,
+          error: e instanceof CanceledError ? null : productsErrorMsg(e),
+        });
+      }
+    },
 
-      abortIfNeeded: () => {
-        if (get().loading) abortController?.abort();
-      },
-    }))
+    abortIfNeeded: () => {
+      if (get().loading) abortController?.abort();
+    },
+  })
 );

@@ -1,4 +1,3 @@
-import { create } from "zustand";
 import { TUser } from "@/api/types";
 import { getMe } from "@/features/auth/actions";
 import { meErrorMsg } from "@/api/errorMsg";
@@ -23,20 +22,23 @@ interface Actions {
 export const meStore = ssrStore<TUser, Values & Actions>(
   "me",
 
-  ({ data, error }) =>
-    create((set) => ({
-      ...initValues,
-      me: data,
-      error,
+  ({ data, error }) => ({
+    year: data,
+    error,
+  }),
 
-      refetch: async () => {
-        set({ loading: true, error: null });
-        try {
-          const me = await getMe();
-          set({ me, loading: false });
-        } catch (e) {
-          set({ loading: false, error: meErrorMsg(e) });
-        }
-      },
-    }))
+  (serverDiff) => (set) => ({
+    ...initValues,
+    ...serverDiff,
+
+    refetch: async () => {
+      set({ loading: true, error: null });
+      try {
+        const me = await getMe();
+        set({ me, loading: false });
+      } catch (e) {
+        set({ loading: false, error: meErrorMsg(e) });
+      }
+    },
+  })
 );

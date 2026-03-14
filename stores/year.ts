@@ -1,17 +1,25 @@
-import { create } from "zustand";
 import { ssrStore } from "@/components/StoresProvider/ssrStore";
 
 interface Values {
   year: number;
 }
 
+const initValues: Values = {
+  year: 0,
+};
+
 interface Actions {}
 
 export const yearStore = ssrStore<number, Values & Actions>(
   "year",
 
-  ({ data }) =>
-    create(() => ({
-      year: data || 0,
-    }))
+  ({ data, error }) => ({
+    year: data || 0,
+    error,
+  }),
+
+  (serverDiff) => () => ({
+    ...initValues,
+    ...serverDiff,
+  })
 );

@@ -12,6 +12,7 @@ interface Values {
   id: number;
   width: number;
   flickering: boolean;
+  startTime: number;
   error: string | null;
 }
 
@@ -20,6 +21,7 @@ const initValues: Values = {
   width: 0,
   flickering: false,
   error: null,
+  startTime: 0,
 };
 
 interface Actions {

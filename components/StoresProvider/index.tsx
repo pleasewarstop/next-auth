@@ -1,86 +1,80 @@
 "use client";
 
-import { getStoreCache } from "@/components/StoresProvider/restorableSsrStore";
 import { getStoreName } from "@/components/StoresProvider/ssrStore";
 import {
-  InitDataItem,
+  ServerDataItem,
   SSRStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
-
-let hydrated = false;
+import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
+import { create } from "zustand";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const initCtx = (store: SSRStore) => ({}) as StoreInstance;
 export const storesContext = createContext(initCtx);
+const storesInstances: Record<string, StoreInstance> = {};
 
 interface Props {
-  initData?: InitDataItem[];
+  serverData?: ServerDataItem[];
   children: ReactNode;
 }
-export function StoresProvider({ initData, children }: Props) {
-  const initDataByStore = useMemo(
+export function StoresProvider({ serverData, children }: Props) {
+  const serverDataByStore = useMemo(
     () =>
-      initData?.reduce(
+      serverData?.reduce(
         (acc, { storeName, ...rest }) => {
           acc[storeName] = rest;
           return acc;
         },
-        {} as Record<string, Omit<InitDataItem, "storeName">>
+        {} as Record<string, Omit<ServerDataItem, "storeName">>
       ),
-    [initData]
+    [serverData]
   );
-  const storesInstancesRef = useRef<Record<string, StoreInstance>>({});
-  const usedInitDataByStoreRef = useRef<
-    Record<string, Omit<InitDataItem, "storeName">>
+  const usedServerDataByStoreRef = useRef<
+    Record<string, Omit<ServerDataItem, "storeName">>
   >({});
 
   const resolveStore = useCallback(
     function <T extends SSRStore>(store: T) {
       const name = getStoreName(store);
-      const storeInitData = initDataByStore?.[name];
+      const storeServerData = serverDataByStore?.[name];
 
-      if (!storeInitData) {
+      if (!storeServerData) {
         throw new Error(
-          `StoreProvider have not initData for ssrStore "${name}"`
+          `StoreProvider have not serverData for ssrStore "${name}"`
         );
       }
 
-      if (usedInitDataByStoreRef.current[name] === storeInitData) {
-        return storesInstancesRef.current[name];
+      if (usedServerDataByStoreRef.current[name] === storeServerData) {
+        return storesInstances[name];
       }
 
-      usedInitDataByStoreRef.current[name] = storeInitData;
-      storesInstancesRef.current[name] = store(storeInitData);
+      const state = storesInstances[name]?.getState() || null;
+      const serverDiff =
+        store.getServerDiff({
+          state,
+          ...storeServerData,
+        }) || null;
 
-      if (hydrated) {
-        const cache = getStoreCache(name);
-        if (cache) storesInstancesRef.current[name].getState().restore(cache);
-      }
+      const filterFunctions = (obj: Record<string, any>) => {
+        const result: Record<string, any> = {};
+        for (const key in obj) {
+          if (typeof obj[key] === "function") continue;
+          result[key] = obj[key];
+        }
+        return result;
+      };
 
-      return storesInstancesRef.current[name];
+      storesInstances[name] = create(
+        store.creator(serverDiff || filterFunctions(state))
+      );
+
+      usedServerDataByStoreRef.current[name] = storeServerData;
+
+      return storesInstances[name];
     },
-    [initDataByStore]
+    [serverDataByStore]
   );
-
-  useEffect(() => {
-    if (!hydrated) {
-      hydrated = true;
-
-      for (const name in storesInstancesRef.current) {
-        const cache = getStoreCache(name);
-        if (cache) storesInstancesRef.current[name].getState().restore(cache);
-      }
-    }
-  }, []);
 
   return (
     <storesContext.Provider value={resolveStore}>
