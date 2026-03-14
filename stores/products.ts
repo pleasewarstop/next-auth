@@ -28,7 +28,7 @@ interface Actions {
 
 let abortController: AbortController | null = null;
 
-export const productsStore = ssrStore<ProductsData, Values & Actions>(
+export const productsStore = ssrStore<ProductsData, Values, Actions>(
   "products",
 
   ({ state, data, error }) => {
@@ -59,9 +59,9 @@ export const productsStore = ssrStore<ProductsData, Values & Actions>(
     }
   },
 
-  (serverDiff) => (set, get) => ({
+  (ssrDiff) => (set, get) => ({
     ...initValues,
-    ...serverDiff,
+    ...ssrDiff,
 
     fetchNextIfNeeded: async () => {
       const { products, loading, total } = get();

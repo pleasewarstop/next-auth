@@ -5,28 +5,28 @@ export type ServerData<D = any> = {
   error: string | null;
 };
 
-export type GetServerDiffArg<D = any, T = any> = ServerData<D> & {
+type GetSSRDiffArg<D = any, T = any> = ServerData<D> & {
   state: T | null;
 };
 
-export type GetServerDiff<D = any, T = any> = (
-  arg: GetServerDiffArg<D, T>
+export type GetSSRDiff<D = any, T = any> = (
+  arg: GetSSRDiffArg<D, T>
 ) => Partial<T> | void;
 
 export type StoreInstance<T = any> = UseBoundStore<StoreApi<T>>;
 
-export type StoreCreator<T = any, SD = Partial<T> | null> = (
-  serverDiff: SD
-) => (set: (state: Partial<T>) => void, get: () => T) => T;
+export type StoreCreator<V = any, A = any, SD = Partial<V> | null> = (
+  ssrDiff: SD
+) => (set: (state: Partial<V & A>) => void, get: () => V & A) => V & A;
 
 export type SSRStore<
   D = any,
   T = any,
-  GSD extends GetServerDiff<D, T> = GetServerDiff<D, T>,
+  GSD extends GetSSRDiff<D, T> = GetSSRDiff<D, T>,
 > = {
   name: string;
-  getServerDiff: GSD;
-  creator: StoreCreator<T, ServerDiffFromGetter<GSD>>;
+  getSsrDiff: GSD;
+  creator: StoreCreator<T, SSRDiffFromGetter<GSD>>;
 };
 
 export type ServerDataItem = ServerData & {
@@ -46,7 +46,7 @@ export type InferStoreInstance<S extends SSRStore> =
 
 type ValueOrPromise<T> = T | Promise<T>;
 
-export type ServerDiffFromGetter<GSD extends GetServerDiff> = ExcludeVoid<
+export type SSRDiffFromGetter<GSD extends GetSSRDiff> = ExcludeVoid<
   ReturnType<GSD>
 >;
 

@@ -6,6 +6,7 @@ import {
   SSRStore,
   StoreInstance,
 } from "@/components/StoresProvider/types";
+import { filterFunctions } from "@/util/filterFunctions";
 import { createContext, ReactNode, useCallback, useMemo, useRef } from "react";
 import { create } from "zustand";
 
@@ -35,7 +36,7 @@ export function StoresProvider({ serverData, children }: Props) {
   >({});
 
   const resolveStore = useCallback(
-    function <T extends SSRStore>(store: T) {
+    function <S extends SSRStore>(store: S) {
       const name = getStoreName(store);
       const storeServerData = serverDataByStore?.[name];
 
@@ -50,24 +51,13 @@ export function StoresProvider({ serverData, children }: Props) {
       }
 
       const state = storesInstances[name]?.getState() || null;
-      const serverDiff =
-        store.getServerDiff({
+      const ssrDiff =
+        store.getSsrDiff({
           state,
           ...storeServerData,
-        }) || null;
+        }) || filterFunctions(state || {});
 
-      const filterFunctions = (obj: Record<string, any>) => {
-        const result: Record<string, any> = {};
-        for (const key in obj) {
-          if (typeof obj[key] === "function") continue;
-          result[key] = obj[key];
-        }
-        return result;
-      };
-
-      storesInstances[name] = create(
-        store.creator(serverDiff || filterFunctions(state))
-      );
+      storesInstances[name] = create(store.creator(ssrDiff));
 
       usedServerDataByStoreRef.current[name] = storeServerData;
 

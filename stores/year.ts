@@ -10,7 +10,7 @@ const initValues: Values = {
 
 interface Actions {}
 
-export const yearStore = ssrStore<number, Values & Actions>(
+export const yearStore = ssrStore<number, Values, Actions>(
   "year",
 
   ({ data, error }) => ({
@@ -18,8 +18,8 @@ export const yearStore = ssrStore<number, Values & Actions>(
     error,
   }),
 
-  (serverDiff) => () => ({
+  (ssrDiff) => () => ({
     ...initValues,
-    ...serverDiff,
+    ...ssrDiff,
   })
 );

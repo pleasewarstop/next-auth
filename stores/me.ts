@@ -19,7 +19,7 @@ interface Actions {
   refetch: () => void;
 }
 
-export const meStore = ssrStore<TUser, Values & Actions>(
+export const meStore = ssrStore<TUser, Values, Actions>(
   "me",
 
   ({ data, error }) => ({
@@ -27,9 +27,9 @@ export const meStore = ssrStore<TUser, Values & Actions>(
     error,
   }),
 
-  (serverDiff) => (set) => ({
+  (ssrDiff) => (set) => ({
     ...initValues,
-    ...serverDiff,
+    ...ssrDiff,
 
     refetch: async () => {
       set({ loading: true, error: null });
