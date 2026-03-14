@@ -41,7 +41,7 @@ export type PrefetchArg<T extends SsrStore> = {
 
 export type InferDataType<T> = T extends SsrStore<infer D> ? D : never;
 
-type ValueOrPromise<T> = T | Promise<T>;
+export type ValueOrPromise<T> = T | Promise<T>;
 
 export type InferStoreCreatorFromGetSsrDiff<
   T,

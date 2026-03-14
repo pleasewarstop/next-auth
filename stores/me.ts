@@ -9,7 +9,7 @@ interface Values {
   error: string | null;
 }
 
-const initValues = {
+const initValues: Values = {
   me: null,
   loading: false,
   error: null,
@@ -19,7 +19,9 @@ interface Actions {
   refetch: () => void;
 }
 
-export const meStore = ssrStore<TUser, Values & Actions>("me")(
+type Store = Values & Actions;
+
+export const meStore = ssrStore<TUser, Store>("me")(
   ({ data, error }) => ({
     me: data,
     error,
