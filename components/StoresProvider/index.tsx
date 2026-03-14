@@ -41,7 +41,7 @@ export function StoresProvider({ ssrData, children }: Props) {
 
       const state = existedInstance?.getState() || null;
       const ssrDiff =
-        store.getSsrDiff({
+        store.onData({
           state,
           ...storeSsrData,
         }) || null;

@@ -1,6 +1,6 @@
 import {
-  GetSsrDiff,
-  InferStoreCreatorFromGetSsrDiff,
+  OnData,
+  InferStoreCreatorFromOnData,
   SsrStore,
 } from "@/components/StoresProvider/types";
 
@@ -9,10 +9,12 @@ const storesNames: Map<SsrStore, string> = new Map();
 export function ssrStore<D, T>() {
   return function <
     N extends string = string,
-    GSD extends GetSsrDiff<D, T> = GetSsrDiff<D, T>,
-    C extends InferStoreCreatorFromGetSsrDiff<T, GSD> =
-      InferStoreCreatorFromGetSsrDiff<T, GSD>,
-  >(name: N, getSsrDiff: GSD, creator: C) {
+    OD extends OnData<D, T> = OnData<D, T>,
+    C extends InferStoreCreatorFromOnData<T, OD> = InferStoreCreatorFromOnData<
+      T,
+      OD
+    >,
+  >(name: N, onData: OD, creator: C) {
     for (const storeName of storesNames.values()) {
       if (name === storeName) {
         throw new Error(
@@ -23,7 +25,7 @@ export function ssrStore<D, T>() {
 
     const store = {
       name,
-      getSsrDiff,
+      onData,
       creator,
     };
 

@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "tsc": "tsc --noEmit",
-    "lint": "eslint"
+    "tsc-no-pretty": "tsc --noEmit --pretty false",
+    "prepare": "husky"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.10",
@@ -27,6 +28,7 @@
     "@types/set-cookie-parser": "^2.4.10",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "husky": "^9.1.7",
     "loader-utils": "^3.3.1",
     "prettier": "^3.8.1",
     "sass": "^1.97.3",

@@ -9,11 +9,11 @@ export type StoreCreator<T = any, SD = Partial<T>> = (
 export type SsrStore<
   D = any,
   T = any,
-  GSD extends GetSsrDiff<D, T> = GetSsrDiff<D, T>,
+  OD extends OnData<D, T> = OnData<D, T>,
 > = {
   name: string;
-  getSsrDiff: GSD;
-  creator: InferStoreCreatorFromGetSsrDiff<T, GSD>;
+  onData: OD;
+  creator: InferStoreCreatorFromOnData<T, OD>;
 };
 
 export type SsrData<D = any> = {
@@ -21,11 +21,11 @@ export type SsrData<D = any> = {
   error: string | null;
 };
 
-export type GetSsrDiff<D = any, T = any> = (
-  arg: GetSsrDiffArg<D, T>
+export type OnData<D = any, T = any> = (
+  arg: OnDataArg<D, T>
 ) => Partial<T> | void;
 
-type GetSsrDiffArg<D, T> = SsrData<D> & {
+type OnDataArg<D, T> = SsrData<D> & {
   state: T | null;
 };
 
@@ -39,15 +39,12 @@ export type InferDataType<T> = T extends SsrStore<infer D> ? D : never;
 
 export type ValueOrPromise<T> = T | Promise<T>;
 
-export type InferStoreCreatorFromGetSsrDiff<
+export type InferStoreCreatorFromOnData<T, OD extends OnData> = StoreCreator<
   T,
-  GSD extends GetSsrDiff,
-> = StoreCreator<T, InferSsrDiffFromGetter<GSD>>;
-
-type InferSsrDiffFromGetter<GSD extends GetSsrDiff> = Exclude<
-  ReturnType<GSD>,
-  void
+  InferSsrDiffFromGetter<OD>
 >;
+
+type InferSsrDiffFromGetter<OD extends OnData> = Exclude<ReturnType<OD>, void>;
 
 export type PrefetchResult<P extends PrefetchArg<any>[]> = {
   [K in P[number] as K["store"]["name"]]: {

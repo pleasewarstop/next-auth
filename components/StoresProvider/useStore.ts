@@ -1,15 +1,15 @@
 import { useContext } from "react";
 import { storesContext } from "@/components/StoresProvider";
 import {
-  GetSsrDiff,
-  InferStoreCreatorFromGetSsrDiff,
+  OnData,
+  InferStoreCreatorFromOnData,
   StoreInstance,
 } from "@/components/StoresProvider/types";
 
-export function useStore<T = any, GSD extends GetSsrDiff = GetSsrDiff>(store: {
+export function useStore<T = any, OD extends OnData = OnData>(store: {
   name: string;
-  getSsrDiff: GSD;
-  creator: InferStoreCreatorFromGetSsrDiff<T, GSD>;
+  onData: OD;
+  creator: InferStoreCreatorFromOnData<T, OD>;
 }) {
   const resolveStore = useContext(storesContext);
 
