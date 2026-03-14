@@ -10,23 +10,20 @@ type ProductsData = Pick<TProductsResponse, "products" | "total">;
 
 interface Values extends ProductsData {
   loading: boolean;
-  error: string | null;
   retrying: boolean;
+  error: string | null;
 }
 const initValues: Values = {
   products: [],
   total: 0,
   loading: false,
-  error: null,
   retrying: false,
+  error: null,
 };
 
 interface Actions {
   fetchNextIfNeeded: () => Promise<void>;
-  abortIfNeeded: () => void;
 }
-
-let abortController: AbortController | null = null;
 
 export const productsStore = ssrStore<ProductsData, Values & Actions>(
   "products"
@@ -71,12 +68,9 @@ export const productsStore = ssrStore<ProductsData, Values & Actions>(
       set({ loading: true, error: null, retrying: Boolean(get().error) });
 
       try {
-        abortController = new AbortController();
-
         const { products: resProducts, total } = await api.products({
           skip,
           limit: PER_PAGE,
-          signal: abortController.signal,
         });
 
         set({
@@ -92,10 +86,6 @@ export const productsStore = ssrStore<ProductsData, Values & Actions>(
           error: e instanceof CanceledError ? null : productsErrorMsg(e),
         });
       }
-    },
-
-    abortIfNeeded: () => {
-      if (get().loading) abortController?.abort();
     },
   })
 );

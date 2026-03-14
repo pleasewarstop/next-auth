@@ -13,7 +13,7 @@ export type SsrStore<
 > = {
   name: string;
   getSsrDiff: GSD;
-  creator: InferStoreCreatorFromGetter<T, GSD>;
+  creator: InferStoreCreatorFromGetSsrDiff<T, GSD>;
 };
 
 export type SsrDataItem = SsrData & {
@@ -26,10 +26,12 @@ export type SsrData<D = any> = {
 };
 
 export type GetSsrDiff<D = any, T = any> = (
-  arg: SsrData<D> & {
-    state: T | null;
-  }
-) => Partial<T> | null | void;
+  arg: GetSsrDiffArg<D, T>
+) => Partial<T> | void;
+
+type GetSsrDiffArg<D, T> = SsrData<D> & {
+  state: T | null;
+};
 
 export type PrefetchArg<T extends SsrStore> = {
   store: T;
@@ -41,7 +43,7 @@ export type InferDataType<T> = T extends SsrStore<infer D> ? D : never;
 
 type ValueOrPromise<T> = T | Promise<T>;
 
-export type InferStoreCreatorFromGetter<
+export type InferStoreCreatorFromGetSsrDiff<
   T,
   GSD extends GetSsrDiff,
 > = StoreCreator<T, InferSsrDiffFromGetter<GSD>>;

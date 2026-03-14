@@ -51,13 +51,14 @@ export function StoresProvider({ ssrData, children }: Props) {
       usedSsrDataByStoreRef.current[name] = storeSsrData;
 
       const state = existedInstance?.getState() || null;
-      const ssrDiff =
-        store.getSsrDiff({
-          state,
-          ...storeSsrData,
-        }) || state;
+      const ssrDiff = store.getSsrDiff({
+        state,
+        ...storeSsrData,
+      });
 
-      storesInstances[name] = create(store.creator(ssrDiff));
+      if (!existedInstance || ssrDiff) {
+        storesInstances[name] = create(store.creator(ssrDiff));
+      }
 
       return storesInstances[name];
     },
