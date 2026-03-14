@@ -1,31 +1,35 @@
 import {
   GetSsrDiff,
+  InferStoreCreatorFromGetter,
   SsrStore,
-  StoreCreator,
 } from "@/components/StoresProvider/types";
 
 const storesNames: Map<SsrStore, string> = new Map();
 
-export function ssrStore<D, T>(
-  name: string,
-  getSsrDiff: GetSsrDiff<D, T>,
-  creator: StoreCreator<T>
-) {
-  for (const storeName of storesNames.values()) {
-    if (name === storeName) {
-      throw new Error(`Cannot create a store with an existing name: "${name}"`);
+export function ssrStore<D, T>(name: string) {
+  return function <
+    GSD extends GetSsrDiff<D, T> = GetSsrDiff<D, T>,
+    SC extends InferStoreCreatorFromGetter<T, GSD> =
+      InferStoreCreatorFromGetter<T, GSD>,
+  >(getSsrDiff: GSD, creator: SC) {
+    for (const storeName of storesNames.values()) {
+      if (name === storeName) {
+        throw new Error(
+          `Cannot create a store with an existing name: "${name}"`
+        );
+      }
     }
-  }
 
-  const store = {
-    name,
-    getSsrDiff,
-    creator,
+    const store = {
+      name,
+      getSsrDiff,
+      creator,
+    };
+
+    storesNames.set(store, name);
+
+    return store;
   };
-
-  storesNames.set(store, name);
-
-  return store;
 }
 
 export const getStoreName = (store: SsrStore) => {

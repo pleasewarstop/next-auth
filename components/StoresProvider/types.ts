@@ -13,7 +13,7 @@ export type SsrStore<
 > = {
   name: string;
   getSsrDiff: GSD;
-  creator: StoreCreator<T, SsrDiffFromGetter<GSD>>;
+  creator: InferStoreCreatorFromGetter<T, GSD>;
 };
 
 export type SsrDataItem = SsrData & {
@@ -41,8 +41,9 @@ export type InferDataType<T> = T extends SsrStore<infer D> ? D : never;
 
 type ValueOrPromise<T> = T | Promise<T>;
 
-export type SsrDiffFromGetter<GSD extends GetSsrDiff> = ExcludeVoid<
-  ReturnType<GSD>
->;
+export type InferStoreCreatorFromGetter<
+  T,
+  GSD extends GetSsrDiff,
+> = StoreCreator<T, InferSsrDiffFromGetter<GSD>>;
 
-type ExcludeVoid<T> = T extends any ? (T extends void ? never : T) : never;
+export type InferSsrDiffFromGetter<GSD extends GetSsrDiff> = ReturnType<GSD>;

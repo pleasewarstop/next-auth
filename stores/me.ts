@@ -19,9 +19,7 @@ interface Actions {
   refetch: () => void;
 }
 
-export const meStore = ssrStore<TUser, Values & Actions>(
-  "me",
-
+export const meStore = ssrStore<TUser, Values & Actions>("me")(
   ({ data, error }) => ({
     me: data,
     error,

@@ -10,9 +10,7 @@ const initValues: Values = {
 
 interface Actions {}
 
-export const yearStore = ssrStore<number, Values & Actions>(
-  "year",
-
+export const yearStore = ssrStore<number, Values & Actions>("year")(
   ({ data, error }) => ({
     year: data || 0,
     error,

@@ -29,8 +29,8 @@ interface Actions {
 let abortController: AbortController | null = null;
 
 export const productsStore = ssrStore<ProductsData, Values & Actions>(
-  "products",
-
+  "products"
+)(
   ({ state, data, error }) => {
     if (!state || error) {
       return {
