@@ -21,8 +21,8 @@ export async function prefetchStores<P extends PrefetchArg<any>[]>(...args: P) {
 
   const results = await Promise.allSettled(promises);
 
-  return results.map((result) => {
-    return result.status === "fulfilled"
+  return results.map((result) =>
+    result.status === "fulfilled"
       ? {
           storeName: result.value.storeName,
           data: result.value.data,
@@ -32,6 +32,12 @@ export async function prefetchStores<P extends PrefetchArg<any>[]>(...args: P) {
           storeName: result.reason.storeName as string,
           data: null,
           error: result.reason.error,
-        };
-  });
+        }
+  ) as {
+    storeName: string;
+    data: DataUnion<P> | null;
+    error: any;
+  }[];
 }
+
+type DataUnion<P extends PrefetchArg<any>[]> = Awaited<P[number]["data"]>;
